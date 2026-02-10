@@ -1,6 +1,6 @@
-# OpenBoard Client
+# Boarda Client
 
-The frontend application for OpenBoard.
+The frontend application for Boarda.
 
 ## Setup Instructions
 

@@ -24,13 +24,13 @@ export default function Hero() {
                 <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl md:text-7xl animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
                     <span className="block text-foreground drop-shadow-sm">Streamline your</span>
                     <span className="block bg-linear-to-r from-primary via-purple-500 to-blue-600 bg-clip-text text-transparent pb-4 text-5xl sm:text-7xl md:text-8xl">
-                        Workflow with Boardly
+                        Workflow with Boarda
                     </span>
                 </h1>
 
                 {/* Subheading */}
                 <p className="mx-auto max-w-2xl text-lg text-muted-foreground sm:text-xl md:text-2xl animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-                    The open-source solution for modern board management. Collaborate effortlessly, track progress, and ship faster.
+                    The open board for modern teams.
                 </p>
 
                 {/* CTA Buttons */}

@@ -1,6 +1,6 @@
-# OpenBoard Server
+# Boarda Server
 
-The backend API for OpenBoard, built with Node.js and Express.
+The backend API for Boarda, built with Node.js and Express.
 
 ## Setup Instructions
 
@@ -33,7 +33,7 @@ or manually create a `.env` file with the following standard configuration:
 PORT=8000
 CORS_ORIGIN=*
 # Add MongoDB URI later
-# MONGODB_URI=mongodb://localhost:27017/openboard
+# MONGODB_URI=mongodb://localhost:27017/boarda
 ```
 
 ### Running Locally

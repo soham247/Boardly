@@ -1,6 +1,6 @@
-# OpenBoard
+# Boarda
 
-OpenBoard is a lightweight, developer-friendly Kanban project management tool built for teams and open-source contributors who want clarity without clutter.
+Boarda is a lightweight, developer-friendly Kanban project management tool built for teams and open-source contributors who want clarity without clutter.
 
 ## Core Philosophy
 
@@ -21,8 +21,8 @@ This repository contains both the client and server code.
 
 1.  **Clone the repository**:
     ```bash
-    git clone https://github.com/your-username/boardly.git
-    cd boardly
+    git clone https://github.com/your-username/boarda.git
+    cd boarda
     ```
 
 2.  **Setup Client & Server**:

@@ -1,6 +1,6 @@
-# Contributing to OpenBoard
+# Contributing to Boarda
 
-Thank you for your interest in contributing to OpenBoard! We welcome contributions from everyone.
+Thank you for your interest in contributing to Boarda! We welcome contributions from everyone.
 
 ## Getting Started
 
@@ -8,8 +8,8 @@ Thank you for your interest in contributing to OpenBoard! We welcome contributio
 2.  **Fork the repository** on GitHub.
 2.  **Clone your fork** locally:
     ```bash
-    git clone https://github.com/your-username/boardly.git
-    cd boardly
+    git clone https://github.com/your-username/boarda.git
+    cd boarda
     ```
 3.  **Create a new branch** for your feature or fix:
     ```bash
