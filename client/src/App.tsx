@@ -5,6 +5,7 @@ import Landing from './pages/Landing'
 import Signin from './pages/Signin'
 import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
+import { ProtectedRoute } from './components/ProtectedRoute'
 
 function App() {
   return (
@@ -13,7 +14,14 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path='/signin' element={<Signin />} />
         <Route path='/signup' element={<Signup />} />
-        <Route path='/dashboard' element={<Dashboard />} />
+        <Route
+          path='/dashboard'
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </>
   )

@@ -47,7 +47,7 @@ export default function Hero() {
                 </div>
 
                 {/* Mockup/Visual Element (Optional placeholder for now) */}
-                <div className="mt-16 relative mx-auto max-w-5xl w-full aspect-[16/9] rounded-xl border border-border/50 bg-card/50 shadow-2xl backdrop-blur-sm overflow-hidden animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-500 hidden sm:block">
+                <div className="mt-16 relative mx-auto max-w-5xl w-full aspect-video rounded-xl border border-border/50 bg-card/50 shadow-2xl backdrop-blur-sm overflow-hidden animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-500 hidden sm:block">
                     <div className="absolute inset-0 bg-linear-to-tr from-primary/5 via-transparent to-transparent"></div>
                     <div className="flex items-center justify-center h-full text-muted-foreground/30 font-medium text-2xl">
                         App Dashboard Preview
