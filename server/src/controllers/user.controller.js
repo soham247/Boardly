@@ -84,21 +84,21 @@ const loginUser = async (req, res) => {
         }
 
         const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(user._id)
-
+        
         const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
 
         const accessOptions = {
             httpOnly: true,
             secure: true,
             sameSite: "none",
-            maxAge: parseInt(process.env.ACCESS_TOKEN_EXPIRY)
+            maxAge: parseInt(process.env.ACCESS_TOKEN_EXPIRY) * 1000
         }
 
         const refreshOptions = {
             httpOnly: true,
             secure: true,
             sameSite: "none",
-            maxAge: parseInt(process.env.REFRESH_TOKEN_EXPIRY)
+            maxAge: parseInt(process.env.REFRESH_TOKEN_EXPIRY) * 1000
         }
 
         return res
@@ -169,24 +169,36 @@ const refreshAccessToken = async (req, res) => {
             return res.status(401).json({ message: "Refresh token is expired or used" })
         }
 
-        const { accessToken, newRefreshToken } = await generateAccessAndRefereshTokens(user._id)
+        const { accessToken, refreshToken: newRefreshToken } = await generateAccessAndRefereshTokens(user._id)
 
-        const options = {
+        const accessOptions = {
             httpOnly: true,
-            secure: true
+            secure: true,
+            sameSite: "none",
+            maxAge: parseInt(process.env.ACCESS_TOKEN_EXPIRY) * 1000
+        }
+
+        const refreshOptions = {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none",
+            maxAge: parseInt(process.env.REFRESH_TOKEN_EXPIRY) * 1000
         }
 
         return res
             .status(200)
-            .cookie("accessToken", accessToken, options)
-            .cookie("refreshToken", newRefreshToken, options)
+            .cookie("accessToken", accessToken, accessOptions)
+            .cookie("refreshToken", newRefreshToken, refreshOptions)
             .json({
                 accessToken,
                 refreshToken: newRefreshToken,
                 message: "Access token refreshed"
             })
     } catch (error) {
-        return res.status(500).json({ message: error?.message || "Invalid refresh token" })
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ message: "Refresh token expired, please login again" })
+        }
+        return res.status(401).json({ message: error?.message || "Invalid refresh token" })
     }
 }
 

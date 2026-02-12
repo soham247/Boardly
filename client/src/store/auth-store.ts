@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
+import api from '../lib/api';
 
 interface User {
     id: string;
@@ -40,12 +41,6 @@ interface AuthState {
     logout: () => Promise<void>;
 }
 
-// Create an axios instance
-const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1/users',
-    withCredentials: true,
-});
-
 export const useAuthStore = create<AuthState>()(
     persist(
         (set) => ({
@@ -81,7 +76,6 @@ export const useAuthStore = create<AuthState>()(
                 try {
                     await api.post<LoginOrSignupResponse>('/users/register', userData);
                     set({ isLoading: false });
-                    // Optionally log them in automatically or redirect to login
                 } catch (error) {
                     let errorMessage = 'Signup failed';
                     if (error instanceof AxiosError) {
