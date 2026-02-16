@@ -25,7 +25,7 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const { login, isLoading, error } = useAuthStore()
+  const { login, skipLogin, isLoading, error } = useAuthStore()
   const navigate = useNavigate()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -34,7 +34,7 @@ export function LoginForm({
     e.preventDefault()
     try {
       await login({ email, password })
-      navigate("/dashboard")
+      navigate("/workspaces")
     } catch (err) {
       // Error is handled by store
     }
@@ -88,6 +88,16 @@ export function LoginForm({
                 <Button variant="outline" type="button" disabled>
                   <Github />
                   <span>Login with Github</span>
+                </Button>
+                <Button
+                  variant="secondary"
+                  type="button"
+                  onClick={() => {
+                    skipLogin();
+                    navigate("/workspaces");
+                  }}
+                >
+                  Skip Login (Dev)
                 </Button>
                 <FieldDescription className="text-center">
                   Don&apos;t have an account? <Link to="/signup">Sign up</Link>
