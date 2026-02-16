@@ -4,11 +4,18 @@ import {
     logoutUser,
     registerUser,
     refreshAccessToken,
+    updateProfile,
 } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
-
+import multer from 'multer';
+import { User } from "../models/user.model.js";
 
 const router = Router()
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage })
+
+router.route('/update-profile').patch(verifyJWT, upload.single('avatar'),updateProfile);
 
 router.route("/register").post(registerUser)
 router.route("/login").post(loginUser)
