@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import { errorMiddleware } from "./middlewares/error.middleware.js";
 
 dotenv.config();
 
@@ -40,5 +41,7 @@ import userRouter from './routes/user.routes.js';
 // routes declaration
 app.use("/api/v1", healthRouter);
 app.use("/api/v1/users", userRouter);
+
+app.use(errorMiddleware);
 
 export { app };
