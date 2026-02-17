@@ -33,7 +33,7 @@ or manually create a `.env` file with the following standard configuration:
 PORT=8000
 CORS_ORIGIN=*
 # Add MongoDB URI later
-# MONGODB_URI=mongodb://localhost:27017/boarda
+# MONGO_URL=mongodb://localhost:27017/boarda
 ```
 
 ### Running Locally

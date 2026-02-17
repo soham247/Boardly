@@ -9,9 +9,9 @@ import {
 } from "@/components/ui/card"
 import {
   Field,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
+  FieldDescription
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Link } from "react-router-dom"
@@ -19,26 +19,40 @@ import { Github } from "lucide-react"
 
 import { useAuthStore } from "@/store/auth-store"
 import { useNavigate } from "react-router-dom"
-import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { loginSchema, type LoginFormData } from "@/schemas/authSchema"
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+
   const { login, skipLogin, isLoading, error } = useAuthStore()
   const navigate = useNavigate()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  })
+
+  const onSubmit = async (data: LoginFormData) => {
     try {
       await login({ email, password })
       navigate("/workspaces")
+
     } catch (err) {
-      // Error is handled by store
+      console.log(err)
     }
   }
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -49,7 +63,7 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -57,10 +71,11 @@ export function LoginForm({
                   id="email"
                   type="email"
                   placeholder="m@example.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  {...register("email")}
                 />
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+                )}
               </Field>
               <Field>
                 <div className="flex items-center">
@@ -75,17 +90,21 @@ export function LoginForm({
                 <Input
                   id="password"
                   type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  {...register("password")}
                 />
+                {errors.password && (
+                  <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+                )}
               </Field>
-              {error && <div className="text-red-500 text-sm">{error}</div>}
-              <Field>
-                <Button type="submit" disabled={isLoading}>
+              
+              {/* Display server-side errors from Zustand */}
+              {serverError && <div className="text-red-500 text-sm font-medium">{serverError}</div>}
+              
+              <FieldGroup className="mt-2">
+                <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading ? "Logging in..." : "Login"}
                 </Button>
-                <Button variant="outline" type="button" disabled>
+                <Button variant="outline" type="button" disabled className="w-full">
                   <Github />
                   <span>Login with Github</span>
                 </Button>
@@ -100,9 +119,9 @@ export function LoginForm({
                   Skip Login (Dev)
                 </Button>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <Link to="/signup">Sign up</Link>
+                  Don&apos;t have an account? <Link to="/signup" className="underline">Sign up</Link>
                 </FieldDescription>
-              </Field>
+              </FieldGroup>
             </FieldGroup>
           </form>
         </CardContent>
