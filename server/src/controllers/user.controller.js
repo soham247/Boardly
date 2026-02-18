@@ -81,19 +81,19 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 
-    const isDev = process.env.DEVELOPEMENT_MODE === "true";
+    // const isDev = process.env.DEVELOPEMENT_MODE === "true";
 
     const accessOptions = {
         httpOnly: true,
         secure: true,
-        sameSite: isDev ? "strict" : "none",
+        sameSite: "none",
         maxAge: parseInt(process.env.ACCESS_TOKEN_EXPIRY) * 1000
     };
 
     const refreshOptions = {
         httpOnly: true,
         secure: true,
-        sameSite: isDev ? "strict" : "none",
+        sameSite: "none",
         maxAge: parseInt(process.env.REFRESH_TOKEN_EXPIRY) * 1000
     };
 

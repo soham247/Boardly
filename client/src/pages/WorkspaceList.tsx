@@ -20,7 +20,7 @@ const WorkspaceList = () => {
     const fetchWorkspaces = async () => {
         try {
             const res = await getWorkspaces();
-            setWorkspaces(res.data.data); // Assuming ApiResponse structure
+            setWorkspaces(res.data.workspaces || []);
         } catch (error) {
             console.error("Failed to fetch workspaces", error);
             if (user?.id === 'dev-user-id') {

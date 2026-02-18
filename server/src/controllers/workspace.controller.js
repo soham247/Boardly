@@ -123,7 +123,12 @@ const addMember = async (req, res) => {
             return res.status(403).json({ message: "Free tier users cannot add members" });
         }
 
-        if (workspace.members.includes(memberId)) {
+        const userToAdd = await User.findById(memberId);
+        if (!userToAdd) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (workspace.members.some(member => member.toString() === memberId)) {
             return res.status(409).json({ message: "User is already a member" });
         }
 

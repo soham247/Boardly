@@ -39,7 +39,6 @@ interface AuthState {
     login: (data: LoginCredentials) => Promise<void>;
     signup: (data: SignupCredentials) => Promise<void>;
     logout: () => Promise<void>;
-    skipLogin: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -108,21 +107,6 @@ export const useAuthStore = create<AuthState>()(
                         isLoading: false
                     });
                 }
-            },
-
-            skipLogin: () => {
-                set({
-                    user: {
-                        id: 'dev-user-id',
-                        fullName: 'Dev User',
-                        email: 'dev@example.com',
-                        username: 'devuser',
-                        tier: 'Free'
-                    },
-                    isAuthenticated: true,
-                    isLoading: false,
-                    error: null
-                });
             },
         }),
         {
