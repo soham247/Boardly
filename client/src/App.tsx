@@ -7,10 +7,12 @@ import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
 import WorkspaceList from './pages/WorkspaceList'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import Navbar from './components/Navbar'
 
 function App() {
   return (
     <>
+      <Navbar />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path='/signin' element={<Signin />} />
