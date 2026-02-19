@@ -5,7 +5,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { AppError } from "../middlewares/error.middleware.js";
 import { fileTypeFromBuffer } from 'file-type';
 
-const generateAccessAndRefereshTokens = async (userId) => {
+export const generateAccessAndRefereshTokens = async (userId) => {
     const user = await User.findById(userId);
     if (!user) {
         throw new AppError(404, "User not found");
@@ -19,9 +19,7 @@ const generateAccessAndRefereshTokens = async (userId) => {
     return { accessToken, refreshToken };
 };
 
-const registerUser = asyncHandler(async (req, res) => {
-    const { fullName, email, username, password } = req.body;
-
+export async function createNewUser(fullName, email, username, password) {
     if ([fullName, email, username, password].some((field) => !field?.trim())) {
         throw new AppError(400, "All fields are required");
     }
@@ -49,6 +47,14 @@ const registerUser = asyncHandler(async (req, res) => {
     if (!createdUser) {
         throw new AppError(500, "Something went wrong while registering the user");
     }
+
+    return createdUser;
+}
+
+const registerUser = asyncHandler(async (req, res) => {
+    const { fullName, email, username, password } = req.body;
+
+    const createdUser = await createNewUser(fullName, email, username, password);
 
     res.status(201).json({
         user: createdUser,

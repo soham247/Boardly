@@ -125,7 +125,14 @@ export function LoginForm({
                 <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading ? "Logging in..." : "Login"}
                 </Button>
-                <Button variant="outline" type="button" disabled className="w-full">
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="w-full"
+                  onClick={() => {
+                    window.location.href = `${import.meta.env.VITE_API_URL}/oauth/github`;
+                  }}
+                >
                   <Github />
                   <span>Login with Github</span>
                 </Button>

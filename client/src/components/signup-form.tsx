@@ -174,9 +174,16 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading ? "Creating Account..." : "Create Account"}
                 </Button>
-                <Button variant="outline" type="button" disabled className="w-full mt-2">
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="w-full mt-2"
+                  onClick={() => {
+                    window.location.href = `${import.meta.env.VITE_API_URL}/oauth/github`;
+                  }}
+                >
                   <Github />
-                  <span>Sign up Github</span>
+                  <span>Signup with Github</span>
                 </Button>
                 <FieldDescription className="px-6 text-center mt-4">
                   Already have an account? <Link to="/signin" className="underline">Sign in</Link>
