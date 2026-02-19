@@ -41,6 +41,9 @@ const handleGithubCallback = asyncHandler(async (req, res) => {
             }
         });
 
+        if (!userResponse.ok)
+            throw new AppError(502, "Failed to fetch user profile from GitHub");
+
         const githubUser = await userResponse.json();
 
         // Fetch user emails
@@ -49,6 +52,9 @@ const handleGithubCallback = asyncHandler(async (req, res) => {
                 'Authorization': `Bearer ${accessToken}`
             }
         });
+
+        if (!emailsResponse.ok)
+            throw new AppError(502, "Failed to fetch user emails from GitHub");
 
         const emails = await emailsResponse.json();
 
@@ -122,16 +128,28 @@ const handleGithubCallback = asyncHandler(async (req, res) => {
 
 const getGithubAuthUrl = asyncHandler(async (req, res) => {
     const rootUrl = 'https://github.com/login/oauth/authorize';
+
+    // Generate CSRF-protecting state
+    const state = crypto.randomBytes(32).toString('hex');
+
+    // Store state in secure cookie
+    res.cookie('oauth_state', state, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax',
+        maxAge: 10 * 60 * 1000,
+    });
+
     const options = {
         client_id: process.env.GITHUB_CLIENT_ID,
         redirect_uri: `${process.env.API_URL}/api/v1/oauth/callback/github`,
         scope: 'user:email',
+        state
     };
 
     const qs = new URLSearchParams(options);
     const url = `${rootUrl}?${qs.toString()}`;
 
-    // Redirect user to GitHub
     return res.redirect(url);
 });
 

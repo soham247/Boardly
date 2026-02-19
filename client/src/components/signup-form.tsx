@@ -183,7 +183,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                   }}
                 >
                   <Github />
-                  <span>Sign up Github</span>
+                  <span>Signup with Github</span>
                 </Button>
                 <FieldDescription className="px-6 text-center mt-4">
                   Already have an account? <Link to="/signin" className="underline">Sign in</Link>
