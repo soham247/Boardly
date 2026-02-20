@@ -261,6 +261,28 @@ const getCurrentUser = asyncHandler(async (req, res) => {
         })
 })
 
+const searchUsers = asyncHandler(async (req, res) => {
+    const { q } = req.query;
+
+    if (!q) {
+        return res.status(200).json({ users: [] });
+    }
+
+    const users = await User.find({
+        $or: [
+            { username: { $regex: q, $options: 'i' } },
+            { fullName: { $regex: q, $options: 'i' } }
+        ]
+    })
+        .select('fullName username avatar email')
+        .limit(10);
+
+    return res.status(200).json({
+        users,
+        message: "Users fetched successfully"
+    });
+});
+
 const finishOnboarding = asyncHandler(async (req, res) => {
     const { fullName, profession, username } = req.body;
 
@@ -296,5 +318,6 @@ export {
     refreshAccessToken,
     updateProfile,
     getCurrentUser,
+    searchUsers,
     finishOnboarding
 }

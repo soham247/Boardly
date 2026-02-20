@@ -9,6 +9,7 @@ import Signup from './pages/Signup'
 import Onboarding from './pages/Onboarding'
 import Dashboard from './pages/Dashboard'
 import WorkspaceList from './pages/WorkspaceList'
+import WorkspaceView from './pages/WorkspaceView'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
 function App() {
@@ -42,6 +43,14 @@ function App() {
           element={
             <ProtectedRoute>
               <WorkspaceList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/workspaces/:workspaceId'
+          element={
+            <ProtectedRoute>
+              <WorkspaceView />
             </ProtectedRoute>
           }
         />

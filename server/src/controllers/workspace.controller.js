@@ -53,6 +53,31 @@ const getWorkspaces = async (req, res) => {
     }
 };
 
+const getWorkspaceById = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const workspace = await Workspace.findById(id).populate('members', 'fullName username avatar');
+
+        if (!workspace) {
+            return res.status(404).json({ message: "Workspace not found" });
+        }
+
+        // Check if user is a member
+        const isMember = workspace.members.some(m => m._id.toString() === req.user._id.toString());
+        if (!isMember) {
+            return res.status(403).json({ message: "You don't have access to this workspace" });
+        }
+
+        return res.status(200).json({
+            message: "Workspace fetched successfully",
+            workspace
+        });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
 const updateWorkspace = async (req, res) => {
     try {
         const { id } = req.params;
@@ -179,6 +204,7 @@ const removeMember = async (req, res) => {
 export {
     createWorkspace,
     getWorkspaces,
+    getWorkspaceById,
     updateWorkspace,
     deleteWorkspace,
     addMember,

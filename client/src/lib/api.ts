@@ -90,4 +90,37 @@ export const getWorkspaces = async () => {
     return await api.get('/workspaces');
 };
 
+export const getWorkspaceById = async (workspaceId: string) => {
+    return await api.get(`/workspaces/${workspaceId}`);
+};
+
+export const createBoard = async (data: {
+    name: string;
+    description?: string;
+    workspaceId: string;
+    members?: { userId: string, role: string }[];
+}) => {
+    return await api.post('/boards', data);
+};
+
+export const updateBoard = async (boardId: string, data: {
+    name?: string;
+    description?: string;
+    members?: { userId: string, role: string }[];
+}) => {
+    return await api.patch(`/boards/${boardId}`, data);
+};
+
+export const searchUsers = async (query: string) => {
+    return await api.get(`/users/search?q=${query}`);
+};
+
+export const getBoards = async (workspaceId: string) => {
+    return await api.get(`/boards/workspace/${workspaceId}`);
+};
+
+export const deleteBoard = async (boardId: string) => {
+    return await api.delete(`/boards/${boardId}`);
+};
+
 export default api;
