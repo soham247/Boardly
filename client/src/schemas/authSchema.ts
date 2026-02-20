@@ -1,8 +1,6 @@
 import { z } from "zod";
 
 export const signupSchema = z.object({
-  fullName: z.string().min(2, "Full name is required"),
-  username: z.string().min(3, "Username must be at least 3 characters").toLowerCase(),
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters long"),
   confirmPassword: z.string(),
@@ -19,3 +17,11 @@ export const loginSchema = z.object({
 });
 
 export type LoginFormData = z.infer<typeof loginSchema>;
+
+export const onboardingSchema = z.object({
+  fullName: z.string().min(2, "Full name is required"),
+  username: z.string().min(3, "Username must be at least 3 characters").regex(/^[a-z0-9_]+$/, "Only lowercase letters, numbers and underscores"),
+  profession: z.string().min(2, "Profession is required"),
+});
+
+export type OnboardingFormData = z.infer<typeof onboardingSchema>;

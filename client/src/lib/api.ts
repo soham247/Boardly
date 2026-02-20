@@ -33,7 +33,8 @@ api.interceptors.response.use(
         const isAuthEndpoint =
             originalRequest.url?.includes('/refresh-token') ||
             originalRequest.url?.includes('/login') ||
-            originalRequest.url?.includes('/register');
+            originalRequest.url?.includes('/register') ||
+            originalRequest.url?.includes('/users/me');  // checkAuth — should fail silently
 
         if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
             if (isRefreshing) {
@@ -78,7 +79,7 @@ function forceLogout() {
     // Clear the zustand persisted state from localStorage
     localStorage.removeItem('auth-storage');
     // Redirect to login page
-    window.location.href = '/login';
+    window.location.href = '/signin';
 }
 
 export const createWorkspace = async (data: { name: string; slug: string }) => {

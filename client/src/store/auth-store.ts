@@ -9,6 +9,8 @@ interface User {
     email: string;
     username: string;
     tier: "Free" | "Premium";
+    profession?: string;
+    isOnboarded: boolean;
 }
 
 interface LoginOrSignupResponse {
@@ -25,9 +27,7 @@ interface LoginCredentials {
 }
 
 interface SignupCredentials {
-    fullName: string;
     email: string;
-    username: string;
     password: string;
 }
 
@@ -39,6 +39,8 @@ interface AuthState {
     login: (data: LoginCredentials) => Promise<void>;
     signup: (data: SignupCredentials) => Promise<void>;
     logout: () => Promise<void>;
+    checkAuth: () => Promise<void>;
+    completeOnboarding: (data: { fullName: string; username: string; profession: string }) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -46,7 +48,7 @@ export const useAuthStore = create<AuthState>()(
         (set) => ({
             user: null,
             isAuthenticated: false,
-            isLoading: false,
+            isLoading: true,   // true until checkAuth resolves — prevents premature redirects
             error: null,
 
             login: async (credentials) => {
@@ -106,6 +108,39 @@ export const useAuthStore = create<AuthState>()(
                         isAuthenticated: false,
                         isLoading: false
                     });
+                }
+            },
+
+            checkAuth: async () => {
+                set({ isLoading: true });
+                try {
+                    const response = await api.get<{ user: User }>('/users/me');
+                    set({
+                        user: response.data.user,
+                        isAuthenticated: true,
+                        isLoading: false
+                    });
+                } catch (error) {
+                    set({
+                        user: null,
+                        isAuthenticated: false,
+                        isLoading: false,
+                        error: null // Don't set error on checkAuth to avoid flashing error messages on load
+                    });
+                }
+            },
+
+            completeOnboarding: async (data) => {
+                set({ isLoading: true });
+                try {
+                    const response = await api.post<{ user: User }>('/users/onboarding', data);
+                    set({
+                        user: response.data.user,
+                        isLoading: false
+                    });
+                } catch (error) {
+                    set({ isLoading: false });
+                    throw error;
                 }
             },
         }),

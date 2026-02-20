@@ -50,8 +50,13 @@ export function LoginForm({
     try {
       const { email, password } = data
       await login({ email, password })
-      navigate("/workspaces")
-
+      // checkAuth already populated user; read state directly
+      const { user } = useAuthStore.getState()
+      if (user && !user.isOnboarded) {
+        navigate("/onboarding")
+      } else {
+        navigate("/workspaces")
+      }
     } catch (err) {
       console.log(err)
     }

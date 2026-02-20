@@ -34,8 +34,6 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      fullName: "",
-      username: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -44,7 +42,6 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
 
   const onSubmit = async (data: SignupFormData) => {
     try {
-      // confirmPassword isn't needed by the backend, so we destructure it out
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { confirmPassword, ...signupData } = data;
       await signup(signupData);
@@ -59,34 +56,12 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
       <CardHeader>
         <CardTitle>Create an account</CardTitle>
         <CardDescription>
-          Enter your information below to create your account
+          Enter your email and password to get started
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)}>
           <FieldGroup>
-            {/* Full Name */}
-            <Field>
-              <FieldLabel htmlFor="fullName">Full Name</FieldLabel>
-              <Input
-                id="fullName"
-                placeholder="John Doe"
-                {...register("fullName")}
-              />
-              {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName.message}</p>}
-            </Field>
-
-            {/* Username */}
-            <Field>
-              <FieldLabel htmlFor="username">Username</FieldLabel>
-              <Input
-                id="username"
-                placeholder="johndoe"
-                {...register("username")}
-              />
-              {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username.message}</p>}
-            </Field>
-
             {/* Email */}
             <Field>
               <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -163,7 +138,6 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
               {errors.confirmPassword && (
                 <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>
               )}
-              <FieldDescription className="text-left">Please confirm your password.</FieldDescription>
             </Field>
 
             {/* Server Errors from Zustand Store */}
@@ -183,7 +157,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                   }}
                 >
                   <Github />
-                  <span>Signup with Github</span>
+                  <span>Continue with Github</span>
                 </Button>
                 <FieldDescription className="px-6 text-center mt-4">
                   Already have an account? <Link to="/signin" className="underline">Sign in</Link>

@@ -113,7 +113,9 @@ const handleGithubCallback = asyncHandler(async (req, res) => {
             maxAge: parseInt(process.env.REFRESH_TOKEN_EXPIRY) * 1000
         };
 
-        const frontendUrl = `${process.env.CORS_ORIGIN}/workspaces`;
+        const isNewUser = !user.isOnboarded;
+        const redirectPath = isNewUser ? '/onboarding' : '/workspaces';
+        const frontendUrl = `${process.env.CORS_ORIGIN}${redirectPath}`;
 
         return res
             .status(200)

@@ -5,6 +5,8 @@ import {
     registerUser,
     refreshAccessToken,
     updateProfile,
+    getCurrentUser,
+    finishOnboarding
 } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import multer from 'multer';
@@ -28,6 +30,8 @@ const upload = multer({
 })
 
 router.route('/update-profile').patch(verifyJWT, upload.single('avatar'), updateProfile);
+router.route("/me").get(verifyJWT, getCurrentUser);
+router.route("/onboarding").post(verifyJWT, finishOnboarding);
 
 router.route("/register").post(registerUser)
 router.route("/login").post(loginUser)

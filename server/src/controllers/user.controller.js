@@ -37,7 +37,8 @@ export async function createNewUser(fullName, email, username, password) {
         avatar: "",
         email,
         password,
-        username: username.toLowerCase()
+        username: username.toLowerCase(),
+        isOnboarded: false
     });
 
     const createdUser = await User.findById(user._id).select(
@@ -52,15 +53,49 @@ export async function createNewUser(fullName, email, username, password) {
 }
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { fullName, email, username, password } = req.body;
+    const { email, password } = req.body;
 
-    const createdUser = await createNewUser(fullName, email, username, password);
+    if (!email || !password) {
+        throw new AppError(400, "Email and password are required");
+    }
+
+    // Auto-generate a username from the email prefix
+    const emailPrefix = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '_');
+    let username = emailPrefix;
+
+    // Ensure username is unique
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+        throw new AppError(409, "User with this email already exists");
+    }
+
+    // Check if the auto-generated username is taken; if so, append random suffix
+    const usernameTaken = await User.findOne({ username });
+    if (usernameTaken) {
+        const { default: crypto } = await import('crypto');
+        username = `${username}_${crypto.randomBytes(2).toString('hex')}`;
+    }
+
+    const user = await User.create({
+        email,
+        password,
+        username,
+        avatar: "",
+        isOnboarded: false,
+    });
+
+    const createdUser = await User.findById(user._id).select("-password -refreshToken");
+
+    if (!createdUser) {
+        throw new AppError(500, "Something went wrong while registering the user");
+    }
 
     res.status(201).json({
         user: createdUser,
         message: "User registered Successfully"
     });
 });
+
 
 const loginUser = asyncHandler(async (req, res) => {
     const { email, username, password } = req.body;
@@ -214,8 +249,44 @@ const updateProfile = asyncHandler(async (req, res) => {
 
     return res.status(200).json({
         message: 'Profile updated successfully',
-        user: updatedUser
     });
+});
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+    return res
+        .status(200)
+        .json({
+            user: req.user,
+            message: "User fetched successfully"
+        })
+})
+
+const finishOnboarding = asyncHandler(async (req, res) => {
+    const { fullName, profession, username } = req.body;
+
+    if (!fullName || !profession) {
+        throw new AppError(400, "Full name and profession are required");
+    }
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+        throw new AppError(404, "User not found");
+    }
+
+    user.fullName = fullName;
+    user.profession = profession;
+    if (username) user.username = username.toLowerCase(); // Optional update if needed
+    user.isOnboarded = true;
+
+    await user.save({ validateBeforeSave: false });
+
+    return res
+        .status(200)
+        .json({
+            user,
+            message: "Onboarding completed successfully"
+        });
 });
 
 export {
@@ -223,5 +294,7 @@ export {
     loginUser,
     logoutUser,
     refreshAccessToken,
-    updateProfile
+    updateProfile,
+    getCurrentUser,
+    finishOnboarding
 }

@@ -21,7 +21,7 @@ const userSchema = new Schema(
         },
         fullName: {
             type: String,
-            required: true,
+            required: false,
             trim: true,
             index: true
         },
@@ -41,6 +41,15 @@ const userSchema = new Schema(
             type: String,
             enum: ["Free", "Premium"],
             default: "Free"
+        },
+        profession: {
+            type: String,
+            required: false,
+            trim: true
+        },
+        isOnboarded: {
+            type: Boolean,
+            default: false
         }
 
     },
