@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
     createWorkspace,
     getWorkspaces,
+    getWorkspaceById,
     updateWorkspace,
     deleteWorkspace,
     addMember,
@@ -18,6 +19,7 @@ router.route("/")
     .get(getWorkspaces);
 
 router.route("/:id")
+    .get(getWorkspaceById)
     .patch(updateWorkspace)
     .delete(deleteWorkspace);
 
