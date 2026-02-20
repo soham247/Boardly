@@ -7,7 +7,6 @@ import type { BoardProps } from "../components/BoardCard";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
 import { LayoutGrid, List, Filter, Plus, ChevronDown } from "lucide-react";
-import { useAuthStore } from "../store/auth-store";
 
 interface Workspace {
   _id: string;
@@ -188,7 +187,7 @@ export default function WorkspaceView() {
 
         {/* Create New Board Card inside Grid/List */}
         <Card
-          className={`border-2 border-dashed border-gray-200 hover:border-indigo-400 hover:bg-indigo-50/30 transition-colors cursor-pointer flex items-center justify-center shadow-none rounded-xl ${viewMode === "grid" ? "flex-col p-6 h-[180px]" : "p-4 flex-row gap-3 h-auto"}`}
+          className={`border-2 border-dashed border-gray-200 hover:border-indigo-400 hover:bg-indigo-50/30 transition-colors cursor-pointer flex items-center justify-center shadow-none rounded-xl ${viewMode === "grid" ? "flex-col p-6 h-45" : "p-4 flex-row gap-3 h-auto"}`}
           onClick={() => setIsCreateModalOpen(true)}
         >
           <div

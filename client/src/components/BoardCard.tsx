@@ -3,7 +3,6 @@ import { Card } from "./ui/card";
 import { MoreHorizontal, Trash2, Edit2 } from "lucide-react";
 import { deleteBoard } from "../lib/api";
 import { EditBoardModal } from "./EditBoardModal";
-import { useAuthStore } from "../store/auth-store";
 
 interface Member {
   userId: {
