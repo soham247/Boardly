@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { getWorkspaces } from "../lib/api";
 import { CreateWorkspaceModal } from "../components/CreateWorkspaceModal";
 import { useAuthStore } from "../store/auth-store";
-import { Link } from "react-router-dom";
-import { Plus, User, Users, ArrowRight } from "lucide-react";
+import { Plus } from "lucide-react";
 import { WorkspaceCard } from "@/components/WorkspaceCard";
 
 interface Workspace {
