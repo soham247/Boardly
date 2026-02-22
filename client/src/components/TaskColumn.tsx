@@ -20,7 +20,7 @@ export function TaskColumn({
   hasWriteAccess,
 }: TaskColumnProps) {
   return (
-    <div className="bg-gray-50/50 rounded-2xl p-4 min-w-[320px] max-w-[320px] flex flex-col h-full border border-gray-100">
+    <div className="bg-gray-50/50 rounded-2xl p-4 flex flex-col h-full border border-gray-100">
       <div className="flex items-center justify-between mb-4 px-1">
         <div className="flex items-center gap-2">
           <h3 className="font-semibold text-gray-900">{title}</h3>

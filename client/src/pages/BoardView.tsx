@@ -143,7 +143,7 @@ export default function BoardView() {
       {/* Kanban Board */}
       <div className="flex gap-6 overflow-x-auto pb-6 flex-1 items-start snap-x snap-mandatory">
         {columns.map((col) => (
-          <div key={col.status} className="snap-center shrink-0 h-full">
+          <div key={col.status} className="snap-center shrink-0 h-full min-w-[280px] w-[85vw] md:min-w-0 md:w-auto md:flex-1">
             <TaskColumn
               title={col.title}
               status={col.status}
