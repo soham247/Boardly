@@ -189,6 +189,12 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         process.env.REFRESH_TOKEN_SECRET
     );
 
+    const user = await User.findById(decodedToken?._id);
+
+    if (!user) {
+        throw new AppError(401, "Invalid refresh token");
+    }
+
     if (incomingRefreshToken !== user?.refreshToken) {
         throw new AppError(401, "Refresh token is expired or used");
     }
@@ -361,8 +367,9 @@ const resetPassword = asyncHandler(async (req, res) => {
     }
 
     user.password = newPassword;
-    user.forgotPasswordOTP = undefined;
-    user.forgotPasswordOTPExpiry = undefined;
+    user.forgotPasswordOTP = null;
+    user.forgotPasswordOTPExpiry = null;
+    user.refreshToken = null;
 
     await user.save();
 
@@ -372,6 +379,11 @@ const resetPassword = asyncHandler(async (req, res) => {
 });
 
 export {
+    registerUser,
+    loginUser,
+    logoutUser,
+    refreshAccessToken,
+    updateProfile,
     getCurrentUser,
     searchUsers,
     finishOnboarding,
