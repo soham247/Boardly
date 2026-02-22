@@ -1,11 +1,13 @@
 import './App.css'
 import { Route, Routes } from 'react-router-dom'
 import { useEffect } from 'react'
+
 import { useAuthStore } from './store/auth-store'
 
 import Landing from './pages/Landing'
 import Signin from './pages/Signin'
 import Signup from './pages/Signup'
+import BoardView from './pages/BoardView'
 import Onboarding from './pages/Onboarding'
 import Dashboard from './pages/Dashboard'
 import WorkspaceList from './pages/WorkspaceList'
