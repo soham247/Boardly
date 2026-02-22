@@ -12,6 +12,8 @@ import WorkspaceList from './pages/WorkspaceList'
 import WorkspaceView from './pages/WorkspaceView'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
+import { Navbar } from './components/Navbar'
+
 function App() {
   const { checkAuth } = useAuthStore()
 
@@ -20,42 +22,45 @@ function App() {
   }, [checkAuth])
 
   return (
-    <>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path='/signin' element={<Signin />} />
-        <Route path='/signup' element={<Signup />} />
-        <Route path='/onboarding' element={
-          <ProtectedRoute>
-            <Onboarding />
-          </ProtectedRoute>
-        } />
-        <Route
-          path='/dashboard'
-          element={
+    <div className="min-h-screen flex flex-col font-sans">
+      <Navbar />
+      <div className="flex-1">
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path='/signin' element={<Signin />} />
+          <Route path='/signup' element={<Signup />} />
+          <Route path='/onboarding' element={
             <ProtectedRoute>
-              <Dashboard />
+              <Onboarding />
             </ProtectedRoute>
-          }
-        />
-        <Route
-          path='/workspaces'
-          element={
-            <ProtectedRoute>
-              <WorkspaceList />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path='/workspaces/:workspaceId'
-          element={
-            <ProtectedRoute>
-              <WorkspaceView />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </>
+          } />
+          <Route
+            path='/dashboard'
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/workspaces'
+            element={
+              <ProtectedRoute>
+                <WorkspaceList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/workspaces/:workspaceId'
+            element={
+              <ProtectedRoute>
+                <WorkspaceView />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </div>
+    </div>
   )
 }
 
