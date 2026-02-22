@@ -323,7 +323,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-        throw new AppError(44, "User with this email does not exist");
+        throw new AppError(404, "User with this email does not exist");
     }
 
     // Generate 6-digit OTP
