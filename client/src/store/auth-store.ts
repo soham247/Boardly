@@ -41,6 +41,8 @@ interface AuthState {
     logout: () => Promise<void>;
     checkAuth: () => Promise<void>;
     completeOnboarding: (data: { fullName: string; username: string; profession: string }) => Promise<void>;
+    forgotPassword: (email: string) => Promise<void>;
+    resetPassword: (data: any) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -140,6 +142,36 @@ export const useAuthStore = create<AuthState>()(
                     });
                 } catch (error) {
                     set({ isLoading: false });
+                    throw error;
+                }
+            },
+
+            forgotPassword: async (email) => {
+                set({ isLoading: true, error: null });
+                try {
+                    await api.post('/users/forgot-password', { email });
+                    set({ isLoading: false });
+                } catch (error) {
+                    let errorMessage = 'Failed to send OTP';
+                    if (error instanceof AxiosError) {
+                        errorMessage = error.response?.data?.message || errorMessage;
+                    }
+                    set({ error: errorMessage, isLoading: false });
+                    throw error;
+                }
+            },
+
+            resetPassword: async (data) => {
+                set({ isLoading: true, error: null });
+                try {
+                    await api.post('/users/reset-password', data);
+                    set({ isLoading: false });
+                } catch (error) {
+                    let errorMessage = 'Failed to reset password';
+                    if (error instanceof AxiosError) {
+                        errorMessage = error.response?.data?.message || errorMessage;
+                    }
+                    set({ error: errorMessage, isLoading: false });
                     throw error;
                 }
             },

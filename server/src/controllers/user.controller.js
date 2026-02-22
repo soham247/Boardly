@@ -313,13 +313,68 @@ const finishOnboarding = asyncHandler(async (req, res) => {
         });
 });
 
+const forgotPassword = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        throw new AppError(400, "Email is required");
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        throw new AppError(44, "User with this email does not exist");
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
+
+    user.forgotPasswordOTP = otp;
+    user.forgotPasswordOTPExpiry = otpExpiry;
+
+    await user.save({ validateBeforeSave: false });
+
+    // Mock sending email
+    console.log(`[FORGOT PASSWORD OTP] Email: ${email}, OTP: ${otp}`);
+
+    return res.status(200).json({
+        message: "OTP sent to your email"
+    });
+});
+
+const resetPassword = asyncHandler(async (req, res) => {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+        throw new AppError(400, "Email, OTP and new password are required");
+    }
+
+    const user = await User.findOne({
+        email,
+        forgotPasswordOTP: otp,
+        forgotPasswordOTPExpiry: { $gt: Date.now() }
+    });
+
+    if (!user) {
+        throw new AppError(400, "Invalid or expired OTP");
+    }
+
+    user.password = newPassword;
+    user.forgotPasswordOTP = undefined;
+    user.forgotPasswordOTPExpiry = undefined;
+
+    await user.save();
+
+    return res.status(200).json({
+        message: "Password reset successfully"
+    });
+});
+
 export {
-    registerUser,
-    loginUser,
-    logoutUser,
-    refreshAccessToken,
-    updateProfile,
     getCurrentUser,
     searchUsers,
-    finishOnboarding
+    finishOnboarding,
+    forgotPassword,
+    resetPassword
 }
