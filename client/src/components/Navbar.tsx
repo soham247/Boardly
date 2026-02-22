@@ -67,6 +67,8 @@ export function Navbar() {
     const tier = user?.tier || "Free";
     const avatarBorderClass = tier === "Premium" ? "border-amber-400 border-2" : "border-gray-300 border-[1.5px]";
 
+    const avatarUrl = user?.avatar || `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.username || 'jane'}&backgroundColor=f1f5f9`;
+
     return (
         <nav className="w-full bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between sticky top-0 z-50 shadow-sm font-sans">
             <div className="flex items-center gap-6 md:gap-8">
@@ -138,7 +140,7 @@ export function Navbar() {
                             <DropdownMenuTrigger asChild>
                                 <button className={`rounded-full outline-none hover:opacity-90 ${avatarBorderClass} p-0.5 transition-all cursor-pointer`}>
                                     <Avatar className="w-[2.15rem] h-[2.15rem]">
-                                        <AvatarImage src={`https://api.dicebear.com/7.x/notionists/svg?seed=${user?.username || 'jane'}&backgroundColor=f1f5f9`} />
+                                        <AvatarImage src={avatarUrl} />
                                         <AvatarFallback className="text-sm font-medium">{user?.fullName?.charAt(0) || 'U'}</AvatarFallback>
                                     </Avatar>
                                 </button>
