@@ -11,6 +11,7 @@ interface User {
     tier: "Free" | "Premium";
     profession?: string;
     isOnboarded: boolean;
+    avatar?: string;
 }
 
 interface LoginOrSignupResponse {

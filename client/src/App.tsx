@@ -62,6 +62,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path='/boards/:boardId'
+            element={
+              <ProtectedRoute>
+                <BoardView />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </div>
     </div>
