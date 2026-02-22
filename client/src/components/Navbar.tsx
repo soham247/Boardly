@@ -75,7 +75,7 @@ export function Navbar() {
                     <div className="bg-primary/20 text-primary p-1.5 rounded-md">
                         <LayoutGrid className="w-5 h-5 fill-primary" />
                     </div>
-                    <span className="font-bold text-[1.35rem] tracking-tight text-gray-900">Boardly</span>
+                    <span className="font-bold text-[1.35rem] tracking-tight text-gray-900">Boarda</span>
                 </Link>
 
                 {/* Workspace Switcher */}
@@ -147,7 +147,7 @@ export function Navbar() {
                                 <DropdownMenuLabel className="font-normal px-2.5 py-2">
                                     <div className="flex flex-col space-y-1">
                                         <p className="text-[0.9rem] font-medium leading-none text-gray-900">{user?.fullName || "Jane Doe"}</p>
-                                        <p className="text-xs leading-none text-gray-500">{user?.email || "jane@boardly.app"}</p>
+                                        <p className="text-xs leading-none text-gray-500">{user?.email || "jane@boarda.app"}</p>
                                     </div>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator className="bg-gray-100" />
