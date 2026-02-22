@@ -39,6 +39,7 @@ import userRouter from './routes/user.routes.js';
 import workspaceRouter from './routes/workspace.routes.js';
 import oauthRouter from './routes/oauth.routes.js';
 import boardRouter from './routes/board.routes.js';
+import taskRouter from './routes/task.routes.js';
 
 
 // routes declaration
@@ -47,6 +48,7 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/workspaces", workspaceRouter);
 app.use("/api/v1/oauth", oauthRouter);
 app.use("/api/v1/boards", boardRouter);
+app.use("/api/v1/tasks", taskRouter);
 
 app.use(errorMiddleware);
 

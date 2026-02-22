@@ -113,8 +113,14 @@ export function CreateBoardModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white dark:bg-zinc-950 p-6 rounded-lg shadow-lg w-full max-w-md">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white dark:bg-zinc-950 p-6 rounded-lg shadow-lg w-full max-w-md"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2 className="text-xl font-bold mb-2">Create new board</h2>
         <p className="text-gray-500 mb-4 text-sm">
           Boards help you organize tasks within your workspace.

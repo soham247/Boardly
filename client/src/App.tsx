@@ -10,6 +10,7 @@ import Onboarding from './pages/Onboarding'
 import Dashboard from './pages/Dashboard'
 import WorkspaceList from './pages/WorkspaceList'
 import WorkspaceView from './pages/WorkspaceView'
+import BoardView from './pages/BoardView'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
 import { Navbar } from './components/Navbar'
@@ -55,6 +56,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <WorkspaceView />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/boards/:boardId'
+            element={
+              <ProtectedRoute>
+                <BoardView />
               </ProtectedRoute>
             }
           />

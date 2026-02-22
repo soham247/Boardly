@@ -3,6 +3,7 @@ import { Card } from "./ui/card";
 import { MoreHorizontal, Trash2, Edit2 } from "lucide-react";
 import { deleteBoard } from "../lib/api";
 import { EditBoardModal } from "./EditBoardModal";
+import { useNavigate } from "react-router-dom";
 
 interface Member {
   userId: {
@@ -69,6 +70,7 @@ export function BoardCard({
   onDelete,
   onUpdate,
 }: BoardCardProps) {
+  const navigate = useNavigate();
   const updatedAtText = timeAgo(board.updatedAt);
 
   // Assign a predictable color based on index if not provided
@@ -118,7 +120,10 @@ export function BoardCard({
   if (viewMode === "list") {
     return (
       <>
-        <Card className="hover:shadow-md transition-shadow relative flex flex-row items-center justify-between p-4 px-6 h-20 shadow-sm border-gray-200 rounded-xl bg-white group">
+        <Card
+          className="hover:shadow-md transition-shadow relative flex flex-row items-center justify-between p-4 px-6 h-20 shadow-sm border-gray-200 rounded-xl bg-white group cursor-pointer"
+          onClick={() => navigate(`/boards/${board._id}`)}
+        >
           <div className="flex items-center gap-4 w-1/3">
             <div className={`w-1.5 h-10 ${topColor} rounded-full`}></div>
             <div>
@@ -223,7 +228,10 @@ export function BoardCard({
 
   return (
     <>
-      <Card className="p-6 gap-0 hover:shadow-lg transition-all relative h-45 flex flex-col justify-between border-gray-200/80 shadow-sm rounded-xl bg-white group">
+      <Card
+        className="p-6 gap-0 hover:shadow-lg transition-all relative h-45 flex flex-col justify-between border-gray-200/80 shadow-sm rounded-xl bg-white group cursor-pointer"
+        onClick={() => navigate(`/boards/${board._id}`)}
+      >
         <div className={`w-8 h-1 shrink-0 ${topColor} rounded-full mb-4`}></div>
 
         <div className="flex justify-between items-start mb-2">
@@ -313,7 +321,9 @@ export function BoardCard({
               )}
             </div>
           ) : (
-            <span className="p-1 px-2 bg-gray-100 text-sm rounded-md">Read-only</span>
+            <span className="p-1 px-2 bg-gray-100 text-sm rounded-md">
+              Read-only
+            </span>
           )}
         </div>
       </Card>
