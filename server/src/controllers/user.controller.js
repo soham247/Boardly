@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { AppError } from "../middlewares/error.middleware.js";
 import { fileTypeFromBuffer } from 'file-type';
+import { sendEmail } from "../utils/email.js";
 
 export const generateAccessAndRefereshTokens = async (userId) => {
     const user = await User.findById(userId);
@@ -341,7 +342,39 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
     await user.save({ validateBeforeSave: false });
 
-    // Mock sending email
+    // Send email
+    const emailHtml = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaec; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h1 style="color: #4f46e5; margin: 0;">Boarda</h1>
+        </div>
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; text-align: center;">
+            <h2 style="color: #111827; margin-top: 0;">Password Reset Request</h2>
+            <p style="color: #4b5563; font-size: 16px; line-height: 1.5;">
+                We received a request to reset your password. Use the OTP below to complete the process. This OTP is valid for 10 minutes.
+            </p>
+            <div style="margin: 30px 0;">
+                <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #111827; background-color: #e5e7eb; padding: 10px 20px; border-radius: 6px;">
+                    ${otp}
+                </span>
+            </div>
+            <p style="color: #6b7280; font-size: 14px;">
+                If you didn't request this, you can safely ignore this email.
+            </p>
+        </div>
+        <div style="text-align: center; margin-top: 20px; color: #9ca3af; font-size: 12px;">
+            &copy; ${new Date().getFullYear()} Boarda. All rights reserved.
+        </div>
+    </div>
+    `;
+
+    await sendEmail({
+        to: email,
+        subject: "Your Boarda Password Reset OTP",
+        text: `Your OTP for password reset is ${otp}. It is valid for 10 minutes.`,
+        html: emailHtml
+    });
+
     console.log(`[FORGOT PASSWORD OTP] Email: ${email}, OTP: ${otp}`);
 
     return res.status(200).json({

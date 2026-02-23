@@ -50,6 +50,12 @@ const userSchema = new Schema(
         isOnboarded: {
             type: Boolean,
             default: false
+        },
+        forgotPasswordOTP: {
+            type: String
+        },
+        forgotPasswordOTPExpiry: {
+            type: Date
         }
 
     },
