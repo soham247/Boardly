@@ -1,45 +1,58 @@
 import { Skeleton } from "./ui/skeleton";
+import { Card } from "./ui/card";
 
 export const BoardCardSkeleton = ({ viewMode }: { viewMode: "grid" | "list" }) => {
-
+    // LIST VIEW (matches h-20 board row)
     if (viewMode === "list") {
-        return (<div className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl bg-white">
-            {/* board icon / cover */}
-            <Skeleton className="w-10 h-10 rounded-lg shrink-0" />
+        return (<Card className="flex items-center justify-between p-4 px-6 h-20 rounded-xl bg-card border-border">
+            {/* Left section */} <div className="flex items-center gap-4 w-1/3"> <Skeleton className="w-1.5 h-10 rounded-full" />
 
-            {/* title + meta */}
-            <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-1/3" />
-                <Skeleton className="h-3 w-1/4" />
+                <div className="space-y-2 w-full">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                </div>
             </div>
 
-            {/* members / actions */}
-            <div className="flex items-center gap-2">
-                <Skeleton className="h-8 w-16 rounded-md" />
-                <Skeleton className="h-8 w-8 rounded-md" />
+            {/* Right section */}
+            <div className="flex items-center gap-6">
+                {/* avatars */}
+                <div className="flex -space-x-2">
+                    <Skeleton className="w-7 h-7 rounded-full border-2 border-background" />
+                    <Skeleton className="w-7 h-7 rounded-full border-2 border-background" />
+                    <Skeleton className="w-7 h-7 rounded-full border-2 border-background" />
+                </div>
+
+                {/* menu button */}
+                <Skeleton className="w-6 h-6 rounded-md" />
             </div>
-        </div>
+        </Card>
         );
 
     }
-    else {
 
-        return (<div className="border border-gray-200 rounded-xl p-4 space-y-4 bg-white">
-            {/* cover image area */} <Skeleton className="h-24 w-full rounded-lg" />
+    // GRID VIEW (matches real card proportions)
+    return (<Card className="p-6 h-45 flex flex-col justify-between rounded-xl bg-card border-border">
 
-            {/* board title */}
-            <Skeleton className="h-4 w-2/3" />
+        {/* top color bar */}
+        <Skeleton className="w-8 h-1 rounded-full mb-4" />
 
-            {/* description / meta */}
+        {/* title + subtitle */}
+        <div className="space-y-2 mb-auto">
+            <Skeleton className="h-5 w-4/5" />
             <Skeleton className="h-3 w-1/2" />
+        </div>
 
-            {/* footer */}
-            <div className="flex justify-between items-center pt-2">
-                <Skeleton className="h-3 w-1/4" />
-                <Skeleton className="h-8 w-8 rounded-md" />
+        {/* bottom */}
+        <div className="flex justify-between items-end mt-4">
+            <div className="flex -space-x-2">
+                <Skeleton className="w-8 h-8 rounded-full border-2 border-background" />
+                <Skeleton className="w-8 h-8 rounded-full border-2 border-background" />
+                <Skeleton className="w-8 h-8 rounded-full border-2 border-background" />
             </div>
-        </div >
 
-        );
-    }
+            <Skeleton className="w-7 h-7 rounded-md" />
+        </div>
+    </Card >
+
+    );
 };

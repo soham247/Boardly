@@ -4,7 +4,6 @@ import { BoardCardSkeleton } from "./BoardCardSkeleton";
 export const WorkspaceSkeleton = ({ viewMode }: { viewMode: "grid" | "list" }) => {
     return (<div className="container mx-auto p-6 md:p-8 max-w-6xl">
 
-        {/* Header */}
         <div className="flex justify-between items-center mb-10">
             <div className="space-y-3">
                 <Skeleton className="h-8 w-64" />
@@ -18,7 +17,6 @@ export const WorkspaceSkeleton = ({ viewMode }: { viewMode: "grid" | "list" }) =
             </div>
         </div>
 
-        {/* Grid */}
         <div className={
             viewMode === "grid"
                 ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
