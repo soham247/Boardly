@@ -31,8 +31,8 @@ export const CreateWorkspaceModal: React.FC<CreateWorkspaceModalProps> = ({ isOp
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-white dark:bg-zinc-950 p-6 rounded-lg shadow-lg w-full max-w-md">
-                <h2 className="text-xl font-bold mb-4">Create Workspace</h2>
+            <div className="bg-white dark:bg-zinc-950 p-6 rounded-lg shadow-lg w-full max-w-md border border-transparent dark:border-zinc-800">
+                <h2 className="text-xl font-bold mb-4 dark:text-gray-100">Create Workspace</h2>
                 {error && <p className="text-red-500 mb-4">{error}</p>}
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>

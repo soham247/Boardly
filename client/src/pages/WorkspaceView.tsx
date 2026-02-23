@@ -76,30 +76,30 @@ export default function WorkspaceView() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
               {workspace ? workspace.name : "Workspace"} Boards
             </h1>
-            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+            <span className="px-2 py-1 bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 text-xs font-medium rounded-full">
               Free Plan
             </span>
           </div>
-          <p className="text-gray-500 text-left">
+          <p className="text-gray-500 dark:text-gray-400 text-left">
             Manage development, bugs, and release cycles.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           {/* View Toggle */}
-          <div className="flex items-center bg-white border border-gray-200 rounded-md p-1 shadow-sm">
+          <div className="flex items-center bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-md p-1 shadow-sm">
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded cursor-pointer ${viewMode === "grid" ? "bg-indigo-50 text-indigo-600" : "text-gray-400 hover:text-gray-600"}`}
+              className={`p-1.5 rounded cursor-pointer ${viewMode === "grid" ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"}`}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded cursor-pointer ${viewMode === "list" ? "bg-indigo-50 text-indigo-600" : "text-gray-400 hover:text-gray-600"}`}
+              className={`p-1.5 rounded cursor-pointer ${viewMode === "list" ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"}`}
             >
               <List className="w-4 h-4" />
             </button>
@@ -110,21 +110,21 @@ export default function WorkspaceView() {
             <Button
               variant="outline"
               onClick={() => setFilterMenuOpen(!filterMenuOpen)}
-              className="text-gray-600 bg-gray-50 hover:bg-gray-100 border-none px-4 py-2 h-9 flex items-center gap-2"
+              className="text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-zinc-900 hover:bg-gray-100 dark:hover:bg-zinc-800 border-none px-4 py-2 h-9 flex items-center gap-2"
             >
               <Filter className="w-4 h-4" />
               Filter
-              <ChevronDown className="w-3 h-3 text-gray-400" />
+              <ChevronDown className="w-3 h-3 text-gray-400 dark:text-gray-500" />
             </Button>
 
             {filterMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-950 rounded-md shadow-lg border border-gray-200 dark:border-zinc-800 z-50">
                 <div className="py-1">
-                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Sort By
                   </div>
                   <button
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${sortBy === "updatedDesc" ? "text-indigo-600 font-medium bg-indigo-50/50" : "text-gray-700"}`}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-zinc-800 ${sortBy === "updatedDesc" ? "text-indigo-600 dark:text-indigo-400 font-medium bg-indigo-50/50 dark:bg-indigo-500/10" : "text-gray-700 dark:text-gray-300"}`}
                     onClick={() => {
                       setSortBy("updatedDesc");
                       setFilterMenuOpen(false);
@@ -133,7 +133,7 @@ export default function WorkspaceView() {
                     Recently Updated
                   </button>
                   <button
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${sortBy === "updatedAsc" ? "text-indigo-600 font-medium bg-indigo-50/50" : "text-gray-700"}`}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-zinc-800 ${sortBy === "updatedAsc" ? "text-indigo-600 dark:text-indigo-400 font-medium bg-indigo-50/50 dark:bg-indigo-500/10" : "text-gray-700 dark:text-gray-300"}`}
                     onClick={() => {
                       setSortBy("updatedAsc");
                       setFilterMenuOpen(false);
@@ -142,7 +142,7 @@ export default function WorkspaceView() {
                     Oldest First
                   </button>
                   <button
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${sortBy === "nameAsc" ? "text-indigo-600 font-medium bg-indigo-50/50" : "text-gray-700"}`}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-zinc-800 ${sortBy === "nameAsc" ? "text-indigo-600 dark:text-indigo-400 font-medium bg-indigo-50/50 dark:bg-indigo-500/10" : "text-gray-700 dark:text-gray-300"}`}
                     onClick={() => {
                       setSortBy("nameAsc");
                       setFilterMenuOpen(false);
@@ -187,22 +187,22 @@ export default function WorkspaceView() {
 
         {/* Create New Board Card inside Grid/List */}
         <Card
-          className={`border-2 border-dashed border-gray-200 hover:border-indigo-400 hover:bg-indigo-50/30 transition-colors cursor-pointer flex items-center justify-center shadow-none rounded-xl ${viewMode === "grid" ? "flex-col p-6 h-45" : "p-4 flex-row gap-3 h-auto"}`}
+          className={`border-2 border-dashed border-gray-200 dark:border-zinc-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50/30 dark:hover:bg-indigo-500/10 transition-colors cursor-pointer flex items-center justify-center shadow-none rounded-xl bg-transparent ${viewMode === "grid" ? "flex-col p-6 h-45" : "p-4 flex-row gap-3 h-auto"}`}
           onClick={() => setIsCreateModalOpen(true)}
         >
           <div
-            className={`rounded-full bg-white flex items-center justify-center border border-gray-100 shadow-sm ${viewMode === "grid" ? "w-12 h-12 mb-4" : "w-8 h-8"}`}
+            className={`rounded-full bg-white dark:bg-zinc-900 flex items-center justify-center border border-gray-100 dark:border-zinc-800 shadow-sm ${viewMode === "grid" ? "w-12 h-12 mb-4" : "w-8 h-8"}`}
           >
-            <Plus className="w-5 h-5 text-indigo-600" />
+            <Plus className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           </div>
-          <span className="font-semibold text-gray-700 text-sm">
+          <span className="font-semibold text-gray-700 dark:text-gray-300 text-sm">
             Create new board
           </span>
         </Card>
       </div>
 
       {/* Footer text */}
-      <div className="mt-12 text-center items-center justify-center flex text-sm text-gray-400">
+      <div className="mt-12 text-center items-center justify-center flex text-sm text-gray-400 dark:text-gray-500">
         <p>
           Showing {boards.length + 1} of {boards.length + 1} items in{" "}
           {workspace?.name || "Workspace"}

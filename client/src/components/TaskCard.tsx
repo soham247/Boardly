@@ -18,7 +18,7 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
   return (
     <div
       onClick={onClick}
-      className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer mb-3 group"
+      className="bg-white dark:bg-zinc-950 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800 hover:shadow-md dark:hover:shadow-[0_4px_12px_rgba(0,0,0,0.5)] transition-shadow cursor-pointer mb-3 group"
     >
       <div className="flex justify-between items-start mb-2">
         <span
@@ -28,7 +28,7 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
         </span>
       </div>
 
-      <h4 className="text-gray-900 font-semibold text-sm mb-2 group-hover:text-indigo-600 transition-colors">
+      <h4 className="text-gray-900 dark:text-gray-100 font-semibold text-sm mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
         {task.title}
       </h4>
 
@@ -36,7 +36,7 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
         <div className="flex items-center gap-3 text-xs font-medium">
           {task.dueDate && (
             <div
-              className={`flex items-center gap-1 ${isOverdue ? "text-red-500" : "text-gray-400"}`}
+              className={`flex items-center gap-1 ${isOverdue ? "text-red-500" : "text-gray-400 dark:text-gray-500"}`}
             >
               <Calendar className="w-3.5 h-3.5" />
               <span>
@@ -48,7 +48,7 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
             </div>
           )}
           {task.description && (
-            <div className="text-gray-400">
+            <div className="text-gray-400 dark:text-gray-500">
               <MessageSquare className="w-3.5 h-3.5" />
             </div>
           )}
@@ -56,7 +56,7 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
 
         {task.assignedTo ? (
           <div
-            className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border border-gray-200 ml-auto"
+            className="w-6 h-6 rounded-full bg-gray-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-zinc-800 ml-auto"
             title={task.assignedTo.fullName || task.assignedTo.username}
           >
             {task.assignedTo.avatar ? (
@@ -74,8 +74,8 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
             )}
           </div>
         ) : (
-          <div className="w-6 h-6 rounded-full border border-dashed border-gray-300 flex items-center justify-center ml-auto">
-            <span className="text-[10px] text-gray-400">?</span>
+          <div className="w-6 h-6 rounded-full border border-dashed border-gray-300 dark:border-zinc-700 flex items-center justify-center ml-auto">
+            <span className="text-[10px] text-gray-400 dark:text-gray-500">?</span>
           </div>
         )}
       </div>
