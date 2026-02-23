@@ -112,26 +112,26 @@ export default function BoardView() {
   return (
     <div className="container mx-auto p-6 md:p-8 max-w-full font-sans flex flex-col h-[calc(100vh-64px)] overflow-hidden">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 flex-shrink-0">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 shrink-0">
         <div className="flex items-center gap-4">
           <Button
             variant="outline"
             size="icon"
             onClick={() => navigate(-1)}
-            className="h-8 w-8 rounded-full border-gray-200"
+            className="h-8 w-8 rounded-full border-gray-200 dark:border-zinc-800 dark:text-gray-100 dark:hover:bg-zinc-800 dark:bg-zinc-950"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
               {board.name}
             </h1>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
                 {board.description || "No description"}
               </span>
               {!hasWriteAccess && (
-                <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] font-bold uppercase rounded flex items-center gap-1">
+                <span className="px-2 py-0.5 bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 text-[10px] font-bold uppercase rounded flex items-center gap-1">
                   Read-only
                 </span>
               )}
@@ -143,7 +143,7 @@ export default function BoardView() {
       {/* Kanban Board */}
       <div className="flex gap-6 overflow-x-auto pb-6 flex-1 items-start snap-x snap-mandatory">
         {columns.map((col) => (
-          <div key={col.status} className="snap-center shrink-0 h-full min-w-[280px] w-[85vw] md:min-w-0 md:w-auto md:flex-1">
+          <div key={col.status} className="snap-center shrink-0 h-full min-w-70 w-[85vw] md:min-w-0 md:w-auto md:flex-1">
             <TaskColumn
               title={col.title}
               status={col.status}

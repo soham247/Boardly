@@ -116,26 +116,27 @@ export function TaskModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg w-full max-w-lg p-6 font-sans max-h-[90vh] overflow-y-auto"
+        className="bg-white dark:bg-zinc-950 rounded-lg w-full max-w-lg p-6 font-sans max-h-[90vh] overflow-y-auto border border-transparent dark:border-zinc-800"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-xl font-semibold mb-4">
+        <h2 className="text-xl font-semibold mb-4 dark:text-gray-100">
           {task ? (isReadOnly ? "View Task" : "Edit Task") : "Create New Task"}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Title</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Task title"
               required
               disabled={isReadOnly}
+              className="bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 dark:text-gray-100"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Description
             </label>
             <textarea
@@ -144,19 +145,19 @@ export function TaskModal({
               placeholder="Add details..."
               rows={3}
               disabled={isReadOnly}
-              className="flex w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm resize-none disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex w-full rounded-md border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-gray-100 px-3 py-2 text-sm resize-none disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Status
               </label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as any)}
-                className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-gray-100 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={isReadOnly}
               >
                 <option value="todo">To Do</option>
@@ -167,13 +168,13 @@ export function TaskModal({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Priority
               </label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as any)}
-                className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-gray-100 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={isReadOnly}
               >
                 <option value="low">Low</option>
@@ -183,13 +184,13 @@ export function TaskModal({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Assign To
               </label>
               <select
                 value={assignedTo}
                 onChange={(e) => setAssignedTo(e.target.value)}
-                className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-gray-100 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={isReadOnly}
               >
                 <option value="">Unassigned</option>
@@ -202,14 +203,14 @@ export function TaskModal({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Due Date
               </label>
               <input
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-gray-100 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 [&::-webkit-calendar-picker-indicator]:dark:invert"
                 disabled={isReadOnly}
               />
             </div>

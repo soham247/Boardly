@@ -106,7 +106,7 @@ export function BoardCard({
       console.error("Failed to delete board:", error);
       alert(
         error.response?.data?.message ||
-          "Failed to delete board. Only creator can delete it.",
+        "Failed to delete board. Only creator can delete it.",
       );
     } finally {
       setIsDeleting(false);
@@ -121,16 +121,16 @@ export function BoardCard({
     return (
       <>
         <Card
-          className="hover:shadow-md transition-shadow relative flex flex-row items-center justify-between p-4 px-6 h-20 shadow-sm border-gray-200 rounded-xl bg-white group cursor-pointer"
+          className="hover:shadow-md transition-shadow relative flex flex-row items-center justify-between p-4 px-6 h-20 shadow-sm border-gray-200 dark:border-zinc-800 rounded-xl bg-card group cursor-pointer"
           onClick={() => navigate(`/boards/${board._id}`)}
         >
           <div className="flex items-center gap-4 w-1/3">
             <div className={`w-1.5 h-10 ${topColor} rounded-full`}></div>
             <div>
-              <h3 className="font-semibold text-base truncate text-left">
+              <h3 className="font-semibold text-base truncate text-left dark:text-gray-100">
                 {board.name}
               </h3>
-              <p className="text-xs text-gray-400 text-left">
+              <p className="text-xs text-gray-400 dark:text-gray-500 text-left">
                 Updated {updatedAtText}
               </p>
             </div>
@@ -141,7 +141,7 @@ export function BoardCard({
               {displayMembers.map((member, i) => (
                 <div
                   key={member.userId._id}
-                  className="w-7 h-7 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center overflow-hidden z-10"
+                  className="w-7 h-7 rounded-full border-2 border-white dark:border-zinc-950 bg-gray-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden z-10"
                   style={{ zIndex: 10 - i }}
                   title={member.userId.fullName || member.userId.username}
                 >
@@ -161,8 +161,8 @@ export function BoardCard({
                 </div>
               ))}
               {extraMembersCount > 0 && (
-                <div className="w-7 h-7 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center z-0">
-                  <span className="text-[10px] text-gray-600 font-medium">
+                <div className="w-7 h-7 rounded-full border-2 border-white dark:border-zinc-950 bg-gray-100 dark:bg-zinc-900 flex items-center justify-center z-0">
+                  <span className="text-[10px] text-gray-600 dark:text-gray-400 font-medium">
                     +{extraMembersCount}
                   </span>
                 </div>
@@ -172,7 +172,7 @@ export function BoardCard({
             {hasWriteAccess && (
               <div className="relative" ref={menuRef}>
                 <button
-                  className="text-gray-300 hover:text-gray-600 hover:bg-gray-100 cursor-pointer p-1.5 rounded-md transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 outline-none"
+                  className="text-gray-300 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 cursor-pointer p-1.5 rounded-md transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 outline-none"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -183,9 +183,9 @@ export function BoardCard({
                 </button>
 
                 {isMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-50 py-1">
+                  <div className="absolute right-0 mt-2 w-32 bg-white dark:bg-zinc-900 rounded-md shadow-lg border border-gray-200 dark:border-zinc-800 z-50 py-1">
                     <button
-                      className="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                      className="w-full text-left px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 flex items-center gap-2"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -196,7 +196,7 @@ export function BoardCard({
                       <Edit2 className="w-3.5 h-3.5" /> Edit
                     </button>
                     <button
-                      className="w-full text-left px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                      className="w-full text-left px-3 py-1.5 text-sm text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -229,18 +229,18 @@ export function BoardCard({
   return (
     <>
       <Card
-        className="p-6 gap-0 hover:shadow-lg transition-all relative h-45 flex flex-col justify-between border-gray-200/80 shadow-sm rounded-xl bg-white group cursor-pointer"
+        className="p-6 gap-0 hover:shadow-lg transition-all relative h-45 flex flex-col justify-between border-gray-200/80 dark:border-zinc-800 shadow-sm rounded-xl bg-card group cursor-pointer"
         onClick={() => navigate(`/boards/${board._id}`)}
       >
         <div className={`w-8 h-1 shrink-0 ${topColor} rounded-full mb-4`}></div>
 
         <div className="flex justify-between items-start mb-2">
-          <h3 className="font-bold text-[17px] text-gray-900 truncate max-w-[85%] text-left">
+          <h3 className="font-bold text-[17px] text-gray-900 dark:text-gray-100 truncate max-w-[85%] text-left">
             {board.name}
           </h3>
         </div>
 
-        <p className="text-[13px] text-gray-400 font-medium mb-auto flex-1 text-left">
+        <p className="text-[13px] text-gray-400 dark:text-gray-500 font-medium mb-auto flex-1 text-left">
           Updated {updatedAtText}
         </p>
 
@@ -249,7 +249,7 @@ export function BoardCard({
             {displayMembers.map((member, i) => (
               <div
                 key={member.userId._id}
-                className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center overflow-hidden z-10"
+                className="w-8 h-8 rounded-full border-2 border-white dark:border-zinc-950 bg-gray-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden z-10"
                 style={{ zIndex: 10 - i }}
                 title={member.userId.fullName || member.userId.username}
               >
@@ -269,8 +269,8 @@ export function BoardCard({
               </div>
             ))}
             {extraMembersCount > 0 && (
-              <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center z-0">
-                <span className="text-xs text-gray-600 font-medium">
+              <div className="w-8 h-8 rounded-full border-2 border-white dark:border-zinc-950 bg-gray-100 dark:bg-zinc-900 flex items-center justify-center z-0">
+                <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
                   +{extraMembersCount}
                 </span>
               </div>
@@ -280,7 +280,7 @@ export function BoardCard({
           {hasWriteAccess ? (
             <div className="relative" ref={menuRef}>
               <button
-                className={`text-gray-300 ${hasWriteAccess ? "hover:text-gray-600 hover:bg-gray-100 cursor-pointer" : "cursor-not-allowed opacity-50"} p-1.5 rounded-md transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 outline-none`}
+                className={`text-gray-300 dark:text-gray-600 ${hasWriteAccess ? "hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 cursor-pointer" : "cursor-not-allowed opacity-50"} p-1.5 rounded-md transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 outline-none`}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -293,9 +293,9 @@ export function BoardCard({
               </button>
 
               {isMenuOpen && (
-                <div className="absolute right-0 bottom-full mb-1 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-50 py-1 text-left origin-bottom-right">
+                <div className="absolute right-0 bottom-full mb-1 w-32 bg-white dark:bg-zinc-900 rounded-md shadow-lg border border-gray-200 dark:border-zinc-800 z-50 py-1 text-left origin-bottom-right">
                   <button
-                    className="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 outline-none"
+                    className="w-full text-left px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 flex items-center gap-2 outline-none"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -306,7 +306,7 @@ export function BoardCard({
                     <Edit2 className="w-3.5 h-3.5" /> Edit
                   </button>
                   <button
-                    className="w-full text-left px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                    className="w-full text-left px-3 py-1.5 text-sm text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -321,7 +321,7 @@ export function BoardCard({
               )}
             </div>
           ) : (
-            <span className="p-1 px-2 bg-gray-100 text-sm rounded-md">
+            <span className="p-1 px-2 bg-gray-100 dark:bg-zinc-800 text-sm rounded-md dark:text-gray-300">
               Read-only
             </span>
           )}

@@ -142,10 +142,10 @@ export function EditBoardModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg w-full max-w-md p-6"
+        className="bg-white dark:bg-zinc-950 rounded-lg w-full max-w-md p-6 border border-transparent dark:border-zinc-800"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-xl font-semibold mb-6">Edit Board</h2>
+        <h2 className="text-xl font-semibold mb-6 dark:text-gray-100">Edit Board</h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
@@ -186,16 +186,16 @@ export function EditBoardModal({
 
             {/* Search Results Dropdown */}
             {searchQuery.length > 1 && (
-              <div className="absolute z-10 w-full bg-white border border-gray-200 mt-1 rounded-md shadow-lg max-h-48 overflow-y-auto">
+              <div className="absolute z-10 w-full bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 mt-1 rounded-md shadow-lg max-h-48 overflow-y-auto">
                 {isSearching ? (
-                  <div className="p-3 text-sm text-gray-500 text-center">
+                  <div className="p-3 text-sm text-gray-500 dark:text-gray-400 text-center">
                     Searching...
                   </div>
                 ) : searchResults.length > 0 ? (
                   searchResults.map((user) => (
                     <div
                       key={user._id}
-                      className="flex items-center gap-3 p-2 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-0"
+                      className="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-zinc-900 cursor-pointer border-b border-gray-50 dark:border-zinc-800/50 last:border-0"
                       onClick={() => handleAddUser(user)}
                     >
                       {user.avatar ? (
@@ -205,8 +205,8 @@ export function EditBoardModal({
                           className="w-8 h-8 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                          <span className="text-[12px] text-gray-500 font-medium">
+                        <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-zinc-800 flex items-center justify-center">
+                          <span className="text-[12px] text-gray-500 dark:text-gray-400 font-medium">
                             {(user.fullName || user.username || "?")
                               .charAt(0)
                               .toUpperCase()}
@@ -214,17 +214,17 @@ export function EditBoardModal({
                         </div>
                       )}
                       <div className="text-left">
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                           {user.fullName}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                           @{user.username}
                         </p>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="p-3 text-sm text-gray-500 text-center">
+                  <div className="p-3 text-sm text-gray-500 dark:text-gray-400 text-center">
                     No users found
                   </div>
                 )}
@@ -233,11 +233,11 @@ export function EditBoardModal({
 
             {/* Selected Users List */}
             {selectedUsers.length > 0 && (
-              <div className="max-h-40 overflow-y-auto space-y-2 border border-gray-100 p-2 rounded-md mt-3">
+              <div className="max-h-40 overflow-y-auto space-y-2 border border-gray-100 dark:border-zinc-800 p-2 rounded-md mt-3">
                 {selectedUsers.map((user) => (
                   <div
                     key={user._id}
-                    className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-md transition-colors border border-transparent hover:border-gray-200"
+                    className="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-zinc-900 rounded-md transition-colors border border-transparent hover:border-gray-200 dark:hover:border-zinc-700"
                   >
                     <div className="flex items-center gap-2">
                       {user.avatar ? (
@@ -247,33 +247,33 @@ export function EditBoardModal({
                           className="w-6 h-6 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
-                          <span className="text-[10px] text-gray-500 font-medium">
+                        <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-zinc-800 flex items-center justify-center">
+                          <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
                             {(user.fullName || user.username || "?")
                               .charAt(0)
                               .toUpperCase()}
                           </span>
                         </div>
                       )}
-                      <span className="text-sm text-gray-700 font-medium text-right">
+                      <span className="text-sm text-gray-700 dark:text-gray-300 font-medium text-right">
                         {user.fullName || user.username}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-2">
                       {user._id ===
-                      (board?.createdBy?._id || board?.createdBy) ? (
-                        <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                        (board?.createdBy?._id || board?.createdBy) ? (
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded">
                           Owner
                         </span>
                       ) : user._id === currentUser?.id ? (
-                        <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded capitalize">
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded capitalize">
                           {user.role} (You)
                         </span>
                       ) : (
                         <>
                           <select
-                            className="text-xs bg-white border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                            className="text-xs bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 dark:text-gray-100 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
                             value={user.role}
                             onChange={(e) =>
                               handleRoleChange(user._id, e.target.value)
@@ -298,7 +298,7 @@ export function EditBoardModal({
             )}
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 mt-4">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-zinc-800 mt-4">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
