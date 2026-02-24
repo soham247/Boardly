@@ -4,7 +4,7 @@ import { CreateWorkspaceModal } from "../components/CreateWorkspaceModal";
 import { useAuthStore } from "../store/auth-store";
 import { Plus } from "lucide-react";
 import { WorkspaceCard } from "@/components/WorkspaceCard";
-import { WorkspaceCardSkeleton } from "@/components/WorkspaceViewSkeleton";
+import { WorkspaceViewSkeleton } from "@/components/WorkspaceViewSkeleton";
 
 interface Workspace {
   _id: string;
@@ -67,7 +67,7 @@ const WorkspaceList = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {isLoading &&
-            Array(3).fill(0).map((_, i) => <WorkspaceCardSkeleton key={i} />)
+            Array(3).fill(0).map((_, i) => <WorkspaceViewSkeleton key={i} />)
           }
           {
             workspaces.map((workspace) => (

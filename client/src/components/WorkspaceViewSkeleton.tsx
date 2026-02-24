@@ -1,6 +1,6 @@
 import { Skeleton } from "./ui/skeleton";
 
-export function WorkspaceCardSkeleton() {
+export function WorkspaceViewSkeleton() {
     return (<div className="block"> <div className="h-full bg-card border border-border rounded-xl p-6 relative flex flex-col">
 
         {/* top section */}
