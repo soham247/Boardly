@@ -7,6 +7,7 @@ import type { BoardProps } from "../components/BoardCard";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
 import { LayoutGrid, List, Filter, Plus, ChevronDown } from "lucide-react";
+import { WorkspaceSkeleton } from "@/components/WorkspaceSkeleton";
 
 interface Workspace {
   _id: string;
@@ -63,7 +64,7 @@ export default function WorkspaceView() {
   });
 
   if (isLoading && boards.length === 0) {
-    return <div className="p-8">Loading boards...</div>;
+    return <WorkspaceSkeleton viewMode={viewMode} />;
   }
 
   const handleDeleteBoard = (boardId: string) => {

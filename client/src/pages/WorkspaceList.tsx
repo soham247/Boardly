@@ -4,6 +4,7 @@ import { CreateWorkspaceModal } from "../components/CreateWorkspaceModal";
 import { useAuthStore } from "../store/auth-store";
 import { Plus } from "lucide-react";
 import { WorkspaceCard } from "@/components/WorkspaceCard";
+import { WorkspaceCardSkeleton } from "@/components/WorkspaceViewSkeleton";
 
 interface Workspace {
   _id: string;
@@ -17,11 +18,13 @@ const WorkspaceList = () => {
   const { user } = useAuthStore();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const fetchWorkspaces = async () => {
     try {
       const res = await getWorkspaces();
       setWorkspaces(res.data.workspaces || []);
+      setIsLoading(false)
     } catch (error) {
       console.error("Failed to fetch workspaces", error);
       if (user?.id === "dev-user-id") {
@@ -63,24 +66,31 @@ const WorkspaceList = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {workspaces.map((workspace) => (
-            <WorkspaceCard key={workspace._id} workspace={workspace} />
-          ))}
+          {isLoading &&
+            Array(3).fill(0).map((_, i) => <WorkspaceCardSkeleton key={i} />)
+          }
+          {
+            workspaces.map((workspace) => (
+              <WorkspaceCard key={workspace._id} workspace={workspace} />
+            ))
+          }
 
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="group h-full flex flex-col items-center justify-center p-6 border-[1.5px] border-dashed border-gray-200 dark:border-zinc-800 rounded-xl bg-card hover:bg-gray-50 dark:hover:bg-zinc-800/80 hover:border-gray-300 dark:hover:border-zinc-700 transition-all duration-200 text-center min-h-55"
-          >
-            <div className="w-12 h-12 rounded-full bg-white dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 shadow-sm flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-200">
-              <Plus className="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
-            </div>
-            <h3 className="text-[15px] font-bold text-gray-900 dark:text-gray-100 mb-1.5">
-              Create New Workspace
-            </h3>
-            <p className="text-[13px] text-gray-500 dark:text-gray-400 max-w-50 leading-relaxed">
-              Setup a new environment for your next big project.
-            </p>
-          </button>
+          {!isLoading &&
+            <>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="group h-full flex flex-col items-center justify-center p-6 border-[1.5px] border-dashed border-gray-200 dark:border-zinc-800 rounded-xl bg-card hover:bg-gray-50 dark:hover:bg-zinc-800/80 hover:border-gray-300 dark:hover:border-zinc-700 transition-all duration-200 text-center min-h-55"
+              >
+                <div className="w-12 h-12 rounded-full bg-white dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 shadow-sm flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-200">
+                  <Plus className="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
+                </div>
+                <h3 className="text-[15px] font-bold text-gray-900 dark:text-gray-100 mb-1.5">
+                  Create New Workspace
+                </h3>
+                <p className="text-[13px] text-gray-500 dark:text-gray-400 max-w-50 leading-relaxed">
+                  Setup a new environment for your next big project.
+                </p>
+              </button></>}
         </div>
 
         <div className="mt-20 text-center text-[12px] font-medium text-gray-400">
