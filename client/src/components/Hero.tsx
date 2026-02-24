@@ -1,8 +1,12 @@
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { useAuthStore } from '@/store/auth-store';
 
 export default function Hero() {
+
+    const { isAuthenticated } = useAuthStore();
+
     return (
         <section className="relative flex flex-col items-center justify-center min-h-[90vh] px-4 text-center overflow-hidden bg-background">
             {/* Background Gradients */}
@@ -36,7 +40,7 @@ export default function Hero() {
                 {/* CTA Buttons */}
                 <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center pt-8 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
                     <Button size="lg" className="rounded-full h-12 px-8 text-base shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:scale-105" asChild>
-                        <Link to="/signup">
+                        <Link to={isAuthenticated?"/workspaces":"/signup"}>
                             Get Started
                         </Link>
                     </Button>
