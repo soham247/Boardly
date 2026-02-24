@@ -368,17 +368,45 @@ const forgotPassword = asyncHandler(async (req, res) => {
     </div>
     `;
 
-    await sendEmail({
-        to: email,
-        subject: "Your Boarda Password Reset OTP",
-        text: `Your OTP for password reset is ${otp}. It is valid for 10 minutes.`,
-        html: emailHtml
-    });
+    try {
+        await sendEmail({
+            to: email,
+            subject: "Your Boarda Password Reset OTP",
+            text: `Your OTP for password reset is ${otp}. It is valid for 10 minutes.`,
+            html: emailHtml
+        });
+    } catch (error) {
+        user.forgotPasswordOTP = null;
+        user.forgotPasswordOTPExpiry = null;
+        await user.save({ validateBeforeSave: false });
 
-    console.log(`[FORGOT PASSWORD OTP] Email: ${email}, OTP: ${otp}`);
+        throw new AppError(500, "Error sending email. Please try again later.");
+    }
 
     return res.status(200).json({
         message: "OTP sent to your email"
+    });
+});
+
+const verifyOTP = asyncHandler(async (req, res) => {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+        throw new AppError(400, "Email and OTP are required");
+    }
+
+    const user = await User.findOne({
+        email,
+        forgotPasswordOTP: otp,
+        forgotPasswordOTPExpiry: { $gt: Date.now() }
+    });
+
+    if (!user) {
+        throw new AppError(400, "Invalid or expired OTP");
+    }
+
+    return res.status(200).json({
+        message: "OTP verified successfully"
     });
 });
 
@@ -421,5 +449,6 @@ export {
     searchUsers,
     finishOnboarding,
     forgotPassword,
+    verifyOTP,
     resetPassword
 }
