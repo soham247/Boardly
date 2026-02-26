@@ -17,6 +17,7 @@ import ResetPassword from './pages/ResetPassword'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
 import { Navbar } from './components/Navbar'
+import { Toaster } from './components/ui/sonner'
 
 function App() {
   const { checkAuth } = useAuthStore()
@@ -74,6 +75,7 @@ function App() {
           />
         </Routes>
       </div>
+      <Toaster />
     </div>
   )
 }
