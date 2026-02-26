@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { getBoards, getWorkspaces } from "../lib/api";
+import { getBoards } from "../lib/api";
+import { useWorkspaces } from "../hooks/useWorkspaces";
 import { CreateBoardModal } from "../components/CreateBoardModal";
 import { BoardCard } from "../components/BoardCard";
 import type { BoardProps } from "../components/BoardCard";
@@ -17,10 +18,11 @@ interface Workspace {
 
 export default function WorkspaceView() {
   const { workspaceId } = useParams<{ workspaceId: string }>();
+  const { workspaces, isLoading: isConnecting } = useWorkspaces();
   const [boards, setBoards] = useState<BoardProps[]>([]);
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingBoards, setIsLoadingBoards] = useState(true);
 
   // UI states
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -33,21 +35,24 @@ export default function WorkspaceView() {
     if (!workspaceId) return;
 
     try {
-      setIsLoading(true);
-      const wsRes = await getWorkspaces();
-      const currentWs = wsRes.data.workspaces.find(
-        (w: any) => w._id === workspaceId,
-      );
-      if (currentWs) setWorkspace(currentWs);
-
+      setIsLoadingBoards(true);
       const boardsRes = await getBoards(workspaceId);
       setBoards(boardsRes.data.boards || []);
     } catch (error) {
       console.error("Failed to fetch data:", error);
     } finally {
-      setIsLoading(false);
+      setIsLoadingBoards(false);
     }
   };
+
+  useEffect(() => {
+    if (workspaces && workspaceId) {
+      const currentWs = workspaces.find((w: any) => w._id === workspaceId);
+      if (currentWs) {
+        setWorkspace(currentWs);
+      }
+    }
+  }, [workspaces, workspaceId]);
 
   useEffect(() => {
     fetchWorkspaceAndBoards();
@@ -63,7 +68,7 @@ export default function WorkspaceView() {
     return 0;
   });
 
-  if (isLoading && boards.length === 0) {
+  if ((isLoadingBoards || isConnecting) && boards.length === 0) {
     return <WorkspaceSkeleton viewMode={viewMode} />;
   }
 

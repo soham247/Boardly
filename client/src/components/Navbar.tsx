@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../store/auth-store";
-import { getWorkspaces } from "../lib/api";
+import { useWorkspaces } from "../hooks/useWorkspaces";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import {
@@ -32,7 +32,7 @@ export function Navbar() {
   const [workspaceName, setWorkspaceName] =
     useState<string>("Select Workspace");
   const [workspaceInitial, setWorkspaceInitial] = useState<string>("W");
-  const [workspaces, setWorkspaces] = useState<any[]>([]);
+  const { workspaces } = useWorkspaces();
 
   const pathname = location.pathname;
   const isWorkspacesRoute = pathname.startsWith("/workspaces");
@@ -42,33 +42,19 @@ export function Navbar() {
   const workspaceId = workspaceIdMatch ? workspaceIdMatch[1] : null;
 
   useEffect(() => {
-    const fetchWorkspaceInfo = async () => {
-      try {
-        const res = await getWorkspaces();
-        const fetchedWorkspaces = res.data.workspaces || [];
-        setWorkspaces(fetchedWorkspaces);
-
-        if (workspaceId) {
-          const current = fetchedWorkspaces.find(
-            (w: any) => w._id === workspaceId,
-          );
-          if (current) {
-            setWorkspaceName(current.name);
-            setWorkspaceInitial(current.name.charAt(0).toUpperCase());
-          }
-        } else if (isWorkspacesRoute) {
-          setWorkspaceName("Select Workspace");
-          setWorkspaceInitial("W");
-        }
-      } catch (error) {
-        console.error("Failed to fetch workspaces for navbar", error);
-      }
-    };
-
     if (isAuthenticated && isWorkspacesRoute) {
-      fetchWorkspaceInfo();
+      if (workspaceId) {
+        const current = workspaces.find((w: any) => w._id === workspaceId);
+        if (current) {
+          setWorkspaceName(current.name);
+          setWorkspaceInitial(current.name.charAt(0).toUpperCase());
+        }
+      } else {
+        setWorkspaceName("Select Workspace");
+        setWorkspaceInitial("W");
+      }
     }
-  }, [workspaceId, isWorkspacesRoute, isAuthenticated]);
+  }, [workspaceId, isWorkspacesRoute, isAuthenticated, workspaces]);
 
   const handleLogout = async () => {
     await logout();

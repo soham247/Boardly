@@ -82,17 +82,7 @@ function forceLogout() {
     window.location.href = '/signin';
 }
 
-export const createWorkspace = async (data: { name: string; slug: string }) => {
-    return await api.post('/workspaces', data);
-};
 
-export const getWorkspaces = async () => {
-    return await api.get('/workspaces');
-};
-
-export const getWorkspaceById = async (workspaceId: string) => {
-    return await api.get(`/workspaces/${workspaceId}`);
-};
 
 export const createBoard = async (data: {
     name: string;

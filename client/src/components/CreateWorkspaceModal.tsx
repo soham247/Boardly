@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { createWorkspace } from '../lib/api';
+import { useWorkspaces } from '../hooks/useWorkspaces';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -14,19 +15,31 @@ export const CreateWorkspaceModal: React.FC<CreateWorkspaceModalProps> = ({ isOp
     const [name, setName] = useState('');
     const [slug, setSlug] = useState('');
     const [error, setError] = useState('');
+    const { createWorkspace } = useWorkspaces();
 
     if (!isOpen) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        try {
-            await createWorkspace({ name, slug });
-            onSuccess();
+
+        toast.promise(
+            createWorkspace({ name, slug }),
+            {
+                loading: 'Creating workspace...',
+                success: () => {
+                    onSuccess();
+                    return 'Workspace created successfully!';
+                },
+                error: (err: any) => {
+                    return err.response?.data?.message || 'Failed to create workspace';
+                }
+            }
+        );
+
+        setTimeout(() => {
             onClose();
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to create workspace');
-        }
+        }, 1000);
     };
 
     return (

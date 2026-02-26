@@ -1,56 +1,13 @@
-import { useEffect, useState } from "react";
-import { getWorkspaces } from "../lib/api";
+import { useState } from "react";
+import { useWorkspaces } from "../hooks/useWorkspaces";
 import { CreateWorkspaceModal } from "../components/CreateWorkspaceModal";
-import { useAuthStore } from "../store/auth-store";
 import { Plus } from "lucide-react";
 import { WorkspaceCard } from "@/components/WorkspaceCard";
 import { WorkspaceViewSkeleton } from "@/components/WorkspaceViewSkeleton";
 
-interface Workspace {
-  _id: string;
-  name: string;
-  slug: string;
-  owner: string;
-  members?: string[];
-}
-
 const WorkspaceList = () => {
-  const { user } = useAuthStore();
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const { workspaces, isLoading } = useWorkspaces();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  const fetchWorkspaces = async () => {
-    try {
-      const res = await getWorkspaces();
-      setWorkspaces(res.data.workspaces || []);
-      setIsLoading(false)
-    } catch (error) {
-      console.error("Failed to fetch workspaces", error);
-      if (user?.id === "dev-user-id") {
-        setWorkspaces([
-          {
-            _id: "1",
-            name: "Personal",
-            slug: "personal",
-            owner: "dev-user-id",
-            members: [],
-          },
-          {
-            _id: "2",
-            name: "Dev Team",
-            slug: "dev-team",
-            owner: "dev-user-id",
-            members: ["1", "2", "3", "4", "5"],
-          },
-        ]);
-      }
-    }
-  };
-
-  useEffect(() => {
-    fetchWorkspaces();
-  }, [user?.id]);
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
@@ -101,7 +58,9 @@ const WorkspaceList = () => {
       <CreateWorkspaceModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSuccess={fetchWorkspaces}
+        onSuccess={() => {
+          setIsModalOpen(false);
+        }}
       />
     </div>
   );
