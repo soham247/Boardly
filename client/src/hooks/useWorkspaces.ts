@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../lib/api';
-import { useAuthStore } from '../store/auth-store';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "../lib/api";
+import { useAuthStore } from "../store/auth-store";
 
 export interface Workspace {
   _id: string;
@@ -19,36 +19,62 @@ export const useWorkspaces = () => {
     isLoading,
     error,
   } = useQuery<Workspace[]>({
-    queryKey: ['workspaces'],
+    queryKey: ["workspaces"],
     queryFn: async () => {
-      const res = await api.get('/workspaces');
-      return res.data.workspaces || [];
+      const res = await api.get("/workspaces");
+      return res.data.workspaces ?? [];
     },
     enabled: isAuthenticated,
-    staleTime: 5 * 60 * 1000, // 5 minutes fresh data
-    gcTime: 10 * 60 * 1000, // 10 minutes before garbage collecting
-    meta: {
-      errorMessage: 'Failed to fetch workspaces',
-    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   const createMutation = useMutation({
     mutationFn: async (data: { name: string; slug: string }) => {
-      const res = await api.post('/workspaces', data);
+      const res = await api.post("/workspaces", data);
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
     },
   });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useMutation<
+    string,
+    unknown,
+    string,
+    { previous?: Workspace[] }
+  >({
     mutationFn: async (workspaceId: string) => {
-      const res = await api.delete(`/workspaces/${workspaceId}`);
-      return res.data;
+      await api.delete(`/workspaces/${workspaceId}`);
+      return workspaceId;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+
+    // optimistic update
+    onMutate: async (workspaceId) => {
+      await queryClient.cancelQueries({ queryKey: ["workspaces"] });
+
+      const previous =
+        queryClient.getQueryData<Workspace[]>(["workspaces"]);
+
+      queryClient.setQueryData<Workspace[]>(
+        ["workspaces"],
+        (old = []) => old.filter((w) => w._id !== workspaceId)
+      );
+
+      return { previous };
+    },
+
+    // rollback on error
+    onError: (_err, _workspaceId, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["workspaces"], context.previous);
+      }
+    },
+
+    // refetch for safety
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
     },
   });
 
