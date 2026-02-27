@@ -12,6 +12,8 @@ interface User {
   profession?: string;
   isOnboarded: boolean;
   avatar?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface LoginOrSignupResponse {
@@ -48,6 +50,7 @@ interface AuthState {
   }) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (data: any) => Promise<void>;
+  updateProfile: (data: FormData) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -141,6 +144,24 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
         try {
           const response = await api.post<{ user: User }>('/users/onboarding', data);
+          set({
+            user: response.data.user,
+            isLoading: false,
+          });
+        } catch (error) {
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+
+      updateProfile: async (data) => {
+        set({ isLoading: true });
+        try {
+          const response = await api.patch<{ user: User }>('/users/update-profile', data, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
           set({
             user: response.data.user,
             isLoading: false,

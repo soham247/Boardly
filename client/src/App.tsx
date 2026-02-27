@@ -14,6 +14,7 @@ import WorkspaceList from './pages/WorkspaceList';
 import WorkspaceView from './pages/WorkspaceView';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import Profile from './pages/Profile';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 import { Navbar } from './components/Navbar';
@@ -49,6 +50,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />

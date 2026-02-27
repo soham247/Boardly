@@ -224,37 +224,52 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 
 const updateProfile = asyncHandler(async (req, res) => {
-  if (!req.file) {
-    throw new AppError(400, 'No file uploaded');
+  const { fullName, profession } = req.body;
+  const updateData = {};
+
+  if (fullName !== undefined) updateData.fullName = fullName;
+  if (profession !== undefined) updateData.profession = profession;
+
+  if (req.file) {
+    if (!req.file.mimetype.startsWith('image/')) {
+      throw new AppError(400, 'File must be an image');
+    }
+
+    const type = await fileTypeFromBuffer(req.file.buffer);
+    if (!type || !type.mime.startsWith('image/')) {
+      throw new AppError(400, 'Invalid file content (not an image)');
+    }
+
+    const result = await uploadToCloudinary(req.file.buffer);
+
+    if (!result || !result.secure_url) {
+      throw new AppError(500, 'Failed to upload image to cloud storage');
+    }
+
+    updateData.avatar = result.secure_url;
   }
 
-  // MIME type check from multer (already happened but good to be safe)
-  if (!req.file.mimetype.startsWith('image/')) {
-    throw new AppError(400, 'File must be an image');
-  }
-
-  // Magic number check
-  const type = await fileTypeFromBuffer(req.file.buffer);
-  if (!type || !type.mime.startsWith('image/')) {
-    throw new AppError(400, 'Invalid file content (not an image)');
-  }
-
-  const result = await uploadToCloudinary(req.file.buffer);
-
-  if (!result || !result.secure_url) {
-    throw new AppError(500, 'Failed to upload image to cloud storage');
+  // If no fields to update were provided, throw an error
+  if (Object.keys(updateData).length === 0) {
+    throw new AppError(400, 'No data provided to update');
   }
 
   const updatedUser = await User.findByIdAndUpdate(
     req.user._id,
-    { avatar: result.secure_url },
-    { new: true }
+    updateData,
+    { new: true, runValidators: true }
   ).select('-password -refreshToken');
 
+  if (!updatedUser) {
+    throw new AppError(404, 'User not found');
+  }
+
   return res.status(200).json({
+    user: updatedUser,
     message: 'Profile updated successfully',
   });
 });
+
 
 const getCurrentUser = asyncHandler(async (req, res) => {
   return res.status(200).json({

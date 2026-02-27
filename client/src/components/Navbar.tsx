@@ -177,7 +177,10 @@ export function Navbar() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-border" />
-                <DropdownMenuItem className="cursor-pointer text-foreground/80 px-2.5 py-2 rounded-md focus:bg-card">
+                <DropdownMenuItem
+                  onClick={() => navigate('/profile')}
+                  className="cursor-pointer text-foreground/80 px-2.5 py-2 rounded-md focus:bg-card"
+                >
                   <UserIcon className="mr-2.5 h-[1.1rem] w-[1.1rem] text-gray-500" />
                   <span className="text-[0.9rem]">Profile</span>
                 </DropdownMenuItem>
