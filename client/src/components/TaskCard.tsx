@@ -1,5 +1,5 @@
-import { Calendar, MessageSquare } from "lucide-react";
-import type { TaskProps } from "./TaskModal";
+import { Calendar, MessageSquare } from 'lucide-react';
+import type { TaskProps } from './TaskModal';
 
 interface TaskCardProps {
   task: TaskProps;
@@ -7,9 +7,9 @@ interface TaskCardProps {
 }
 
 const priorityColors = {
-  low: "bg-blue-100 text-blue-700",
-  medium: "bg-yellow-100 text-yellow-700",
-  high: "bg-red-100 text-red-700",
+  low: 'bg-blue-100 text-blue-700',
+  medium: 'bg-yellow-100 text-yellow-700',
+  high: 'bg-red-100 text-red-700',
 };
 
 export function TaskCard({ task, onClick }: TaskCardProps) {
@@ -36,13 +36,13 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
         <div className="flex items-center gap-3 text-xs font-medium">
           {task.dueDate && (
             <div
-              className={`flex items-center gap-1 ${isOverdue ? "text-red-500" : "text-gray-400 dark:text-gray-500"}`}
+              className={`flex items-center gap-1 ${isOverdue ? 'text-red-500' : 'text-gray-400 dark:text-gray-500'}`}
             >
               <Calendar className="w-3.5 h-3.5" />
               <span>
                 {new Date(task.dueDate).toLocaleDateString(undefined, {
-                  month: "short",
-                  day: "numeric",
+                  month: 'short',
+                  day: 'numeric',
                 })}
               </span>
             </div>
@@ -67,7 +67,7 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
               />
             ) : (
               <span className="text-[10px] text-gray-500 font-medium">
-                {(task.assignedTo.fullName || task.assignedTo.username || "?")
+                {(task.assignedTo.fullName || task.assignedTo.username || '?')
                   .charAt(0)
                   .toUpperCase()}
               </span>

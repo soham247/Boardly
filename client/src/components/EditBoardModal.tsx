@@ -1,16 +1,16 @@
-import { useState, useEffect, useRef } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { updateBoard, searchUsers } from "../lib/api";
-import { Search, X } from "lucide-react";
-import { useAuthStore } from "../store/auth-store";
+import { useState, useEffect, useRef } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { updateBoard, searchUsers } from '../lib/api';
+import { Search, X } from 'lucide-react';
+import { useAuthStore } from '../store/auth-store';
 
 const boardSchema = z.object({
-  name: z.string().min(1, "Board name is required"),
+  name: z.string().min(1, 'Board name is required'),
   description: z.string().optional(),
 });
 
@@ -23,14 +23,9 @@ interface EditBoardModalProps {
   board: any;
 }
 
-export function EditBoardModal({
-  isOpen,
-  onClose,
-  onSuccess,
-  board,
-}: EditBoardModalProps) {
+export function EditBoardModal({ isOpen, onClose, onSuccess, board }: EditBoardModalProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
@@ -46,23 +41,23 @@ export function EditBoardModal({
   } = useForm<BoardFormValues>({
     resolver: zodResolver(boardSchema),
     defaultValues: {
-      name: board?.name || "",
-      description: board?.description || "",
+      name: board?.name || '',
+      description: board?.description || '',
     },
   });
 
   useEffect(() => {
     if (isOpen && board) {
       reset({
-        name: board.name || "",
-        description: board.description || "",
+        name: board.name || '',
+        description: board.description || '',
       });
 
       if (board.members && Array.isArray(board.members)) {
         // Map the nested userId object back down to a flat user object
         const flatMembers = board.members.map((m: any) => {
           const mappedUser = m.userId ? { ...m.userId } : { _id: m._id };
-          return { ...mappedUser, role: m.role || "read" };
+          return { ...mappedUser, role: m.role || 'read' };
         });
         setSelectedUsers(flatMembers);
       }
@@ -71,7 +66,7 @@ export function EditBoardModal({
 
   useEffect(() => {
     if (!isOpen) {
-      setSearchQuery("");
+      setSearchQuery('');
       setSearchResults([]);
       setSelectedUsers([]);
     }
@@ -85,7 +80,7 @@ export function EditBoardModal({
           const res = await searchUsers(searchQuery);
           setSearchResults(res.data.users);
         } catch (error) {
-          console.error("Failed to search users", error);
+          console.error('Failed to search users', error);
         } finally {
           setIsSearching(false);
         }
@@ -99,9 +94,9 @@ export function EditBoardModal({
 
   const handleAddUser = (user: any) => {
     if (!selectedUsers.find((u) => u._id === user._id)) {
-      setSelectedUsers([...selectedUsers, { ...user, role: "read" }]);
+      setSelectedUsers([...selectedUsers, { ...user, role: 'read' }]);
     }
-    setSearchQuery("");
+    setSearchQuery('');
     setSearchResults([]);
   };
 
@@ -110,9 +105,7 @@ export function EditBoardModal({
   };
 
   const handleRoleChange = (userId: string, role: string) => {
-    setSelectedUsers(
-      selectedUsers.map((u) => (u._id === userId ? { ...u, role } : u)),
-    );
+    setSelectedUsers(selectedUsers.map((u) => (u._id === userId ? { ...u, role } : u)));
   };
 
   const onSubmit = async (data: BoardFormValues) => {
@@ -128,7 +121,7 @@ export function EditBoardModal({
       onSuccess();
       onClose();
     } catch (error) {
-      console.error("Failed to update board:", error);
+      console.error('Failed to update board:', error);
     } finally {
       setIsLoading(false);
     }
@@ -154,20 +147,18 @@ export function EditBoardModal({
             </Label>
             <Input
               id="name"
-              {...register("name")}
+              {...register('name')}
               placeholder="e.g., Sprint Planning"
-              className={errors.name ? "border-red-500" : ""}
+              className={errors.name ? 'border-red-500' : ''}
             />
-            {errors.name && (
-              <p className="text-sm text-red-500">{errors.name.message}</p>
-            )}
+            {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="description">Description (Optional)</Label>
             <Input
               id="description"
-              {...register("description")}
+              {...register('description')}
               placeholder="Brief description of the board"
             />
           </div>
@@ -207,9 +198,7 @@ export function EditBoardModal({
                       ) : (
                         <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-zinc-800 flex items-center justify-center">
                           <span className="text-[12px] text-gray-500 dark:text-gray-400 font-medium">
-                            {(user.fullName || user.username || "?")
-                              .charAt(0)
-                              .toUpperCase()}
+                            {(user.fullName || user.username || '?').charAt(0).toUpperCase()}
                           </span>
                         </div>
                       )}
@@ -217,9 +206,7 @@ export function EditBoardModal({
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                           {user.fullName}
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          @{user.username}
-                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">@{user.username}</p>
                       </div>
                     </div>
                   ))
@@ -249,9 +236,7 @@ export function EditBoardModal({
                       ) : (
                         <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-zinc-800 flex items-center justify-center">
                           <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
-                            {(user.fullName || user.username || "?")
-                              .charAt(0)
-                              .toUpperCase()}
+                            {(user.fullName || user.username || '?').charAt(0).toUpperCase()}
                           </span>
                         </div>
                       )}
@@ -261,8 +246,7 @@ export function EditBoardModal({
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {user._id ===
-                        (board?.createdBy?._id || board?.createdBy) ? (
+                      {user._id === (board?.createdBy?._id || board?.createdBy) ? (
                         <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded">
                           Owner
                         </span>
@@ -275,9 +259,7 @@ export function EditBoardModal({
                           <select
                             className="text-xs bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 dark:text-gray-100 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
                             value={user.role}
-                            onChange={(e) =>
-                              handleRoleChange(user._id, e.target.value)
-                            }
+                            onChange={(e) => handleRoleChange(user._id, e.target.value)}
                           >
                             <option value="read">Read</option>
                             <option value="write">Write</option>
@@ -307,7 +289,7 @@ export function EditBoardModal({
               className="bg-indigo-600 hover:bg-indigo-700"
               disabled={isLoading}
             >
-              {isLoading ? "Saving..." : "Save Changes"}
+              {isLoading ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </form>

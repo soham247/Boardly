@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { useState, useEffect } from 'react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 
 export interface TaskProps {
   _id: string;
   title: string;
   description?: string;
-  status: "todo" | "in-progress" | "review" | "done";
-  priority: "low" | "medium" | "high";
+  status: 'todo' | 'in-progress' | 'review' | 'done';
+  priority: 'low' | 'medium' | 'high';
   dueDate?: string;
   assignedTo?: {
     _id: string;
@@ -39,7 +39,7 @@ interface TaskModalProps {
   onSave: (taskData: any) => Promise<void>;
   onDelete?: () => void;
   task?: TaskProps;
-  defaultStatus?: "todo" | "in-progress" | "review" | "done";
+  defaultStatus?: 'todo' | 'in-progress' | 'review' | 'done';
   boardMembers: Member[];
   isReadOnly?: boolean;
 }
@@ -50,39 +50,37 @@ export function TaskModal({
   onSave,
   onDelete,
   task,
-  defaultStatus = "todo",
+  defaultStatus = 'todo',
   boardMembers,
   isReadOnly = false,
 }: TaskModalProps) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [status, setStatus] = useState<
-    "todo" | "in-progress" | "review" | "done"
-  >("todo");
-  const [priority, setPriority] = useState<"low" | "medium" | "high">("low");
-  const [assignedTo, setAssignedTo] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [status, setStatus] = useState<'todo' | 'in-progress' | 'review' | 'done'>('todo');
+  const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('low');
+  const [assignedTo, setAssignedTo] = useState('');
+  const [dueDate, setDueDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (task) {
       setTitle(task.title);
-      setDescription(task.description || "");
+      setDescription(task.description || '');
       setStatus(task.status);
       setPriority(task.priority);
-      setAssignedTo(task.assignedTo?._id || "");
+      setAssignedTo(task.assignedTo?._id || '');
       if (task.dueDate) {
-        setDueDate(new Date(task.dueDate).toISOString().split("T")[0]);
+        setDueDate(new Date(task.dueDate).toISOString().split('T')[0]);
       } else {
-        setDueDate("");
+        setDueDate('');
       }
     } else {
-      setTitle("");
-      setDescription("");
+      setTitle('');
+      setDescription('');
       setStatus(defaultStatus);
-      setPriority("low");
-      setAssignedTo("");
-      setDueDate("");
+      setPriority('low');
+      setAssignedTo('');
+      setDueDate('');
     }
   }, [task, isOpen, defaultStatus]);
 
@@ -102,7 +100,7 @@ export function TaskModal({
       });
       onClose();
     } catch (error) {
-      console.error("Failed to save task", error);
+      console.error('Failed to save task', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -120,7 +118,7 @@ export function TaskModal({
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-xl font-semibold mb-4 dark:text-gray-100">
-          {task ? (isReadOnly ? "View Task" : "Edit Task") : "Create New Task"}
+          {task ? (isReadOnly ? 'View Task' : 'Edit Task') : 'Create New Task'}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -151,9 +149,7 @@ export function TaskModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Status
-              </label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as any)}
@@ -217,9 +213,7 @@ export function TaskModal({
           </div>
 
           {!isReadOnly && (
-            <div
-              className={`flex mt-6 ${task && onDelete ? "justify-between" : "justify-end"}`}
-            >
+            <div className={`flex mt-6 ${task && onDelete ? 'justify-between' : 'justify-end'}`}>
               {task && onDelete && (
                 <Button
                   type="button"
@@ -239,7 +233,7 @@ export function TaskModal({
                   disabled={isSubmitting || !title || isReadOnly}
                   className="bg-indigo-600 hover:bg-indigo-700 text-white"
                 >
-                  {isSubmitting ? "Saving..." : "Save"}
+                  {isSubmitting ? 'Saving...' : 'Save'}
                 </Button>
               </div>
             </div>

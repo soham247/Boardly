@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useAuthStore } from "../store/auth-store";
-import { useWorkspaces } from "../hooks/useWorkspaces";
-import { Button } from "./ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuthStore } from '../store/auth-store';
+import { useWorkspaces } from '../hooks/useWorkspaces';
+import { Button } from './ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,8 +11,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { ModeToggle } from "./mode-toggle";
+} from './ui/dropdown-menu';
+import { ModeToggle } from './mode-toggle';
 import {
   LayoutGrid,
   Search,
@@ -22,20 +22,19 @@ import {
   Settings,
   CreditCard,
   ChevronDown,
-} from "lucide-react";
+} from 'lucide-react';
 
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [workspaceName, setWorkspaceName] =
-    useState<string>("Select Workspace");
-  const [workspaceInitial, setWorkspaceInitial] = useState<string>("W");
+  const [workspaceName, setWorkspaceName] = useState<string>('Select Workspace');
+  const [workspaceInitial, setWorkspaceInitial] = useState<string>('W');
   const { workspaces } = useWorkspaces();
 
   const pathname = location.pathname;
-  const isWorkspacesRoute = pathname.startsWith("/workspaces");
+  const isWorkspacesRoute = pathname.startsWith('/workspaces');
 
   // Extract workspace ID from URL: /workspaces/123 -> 123
   const workspaceIdMatch = pathname.match(/^\/workspaces\/([a-zA-Z0-9_-]+)$/);
@@ -50,41 +49,34 @@ export function Navbar() {
           setWorkspaceInitial(current.name.charAt(0).toUpperCase());
         }
       } else {
-        setWorkspaceName("Select Workspace");
-        setWorkspaceInitial("W");
+        setWorkspaceName('Select Workspace');
+        setWorkspaceInitial('W');
       }
     }
   }, [workspaceId, isWorkspacesRoute, isAuthenticated, workspaces]);
 
   const handleLogout = async () => {
     await logout();
-    navigate("/");
+    navigate('/');
   };
 
-  const tier = user?.tier || "Free";
+  const tier = user?.tier || 'Free';
   const avatarBorderClass =
-    tier === "Premium"
-      ? "border-amber-400 border-2"
-      : "border-border border-[1.5px]";
+    tier === 'Premium' ? 'border-amber-400 border-2' : 'border-border border-[1.5px]';
 
   const avatarUrl =
     user?.avatar ||
-    `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.username || "jane"}&backgroundColor=f1f5f9`;
+    `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.username || 'jane'}&backgroundColor=f1f5f9`;
 
   return (
     <nav className="w-full bg-background border-b border-border px-6 py-4 flex items-center justify-between sticky top-0 z-50 shadow-sm font-sans">
       <div className="flex items-center gap-6 md:gap-8">
         {/* Logo */}
-        <Link
-          to={isAuthenticated ? "/dashboard" : "/"}
-          className="flex items-center gap-2"
-        >
+        <Link to={isAuthenticated ? '/dashboard' : '/'} className="flex items-center gap-2">
           <div className="bg-primary/20 text-primary p-1.5 rounded-md">
             <LayoutGrid className="w-5 h-5 fill-primary" />
           </div>
-          <span className="font-bold text-[1.35rem] tracking-tight">
-            Boarda
-          </span>
+          <span className="font-bold text-[1.35rem] tracking-tight">Boarda</span>
         </Link>
 
         {/* Workspace Switcher */}
@@ -95,9 +87,7 @@ export function Navbar() {
                 <div className="w-6 h-6 bg-indigo-500 rounded text-xs text-white flex items-center justify-center font-semibold">
                   {workspaceInitial}
                 </div>
-                <span className="text-sm font-medium text-foreground/50">
-                  {workspaceName}
-                </span>
+                <span className="text-sm font-medium text-foreground/50">{workspaceName}</span>
                 <ChevronDown className="w-4 h-4 text-gray-400 ml-1" />
               </div>
             </DropdownMenuTrigger>
@@ -142,7 +132,7 @@ export function Navbar() {
             </div>
             <ModeToggle />
             <Button
-              onClick={() => navigate("/signin")}
+              onClick={() => navigate('/signin')}
               className="bg-primary hover:bg-primary/90 text-white shadow-sm px-6 h-10 font-medium cursor-pointer"
             >
               Login
@@ -167,7 +157,7 @@ export function Navbar() {
                   <Avatar className="w-[2.15rem] h-[2.15rem]">
                     <AvatarImage src={avatarUrl} />
                     <AvatarFallback className="text-sm font-medium">
-                      {user?.fullName?.charAt(0) || "U"}
+                      {user?.fullName?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
                 </button>
@@ -179,10 +169,10 @@ export function Navbar() {
                 <DropdownMenuLabel className="font-normal px-2.5 py-2">
                   <div className="flex flex-col space-y-1">
                     <p className="text-[0.9rem] font-medium leading-none text-foreground/80">
-                      {user?.fullName || "Jane Doe"}
+                      {user?.fullName || 'Jane Doe'}
                     </p>
                     <p className="text-xs leading-none text-gray-500">
-                      {user?.email || "jane@boarda.app"}
+                      {user?.email || 'jane@boarda.app'}
                     </p>
                   </div>
                 </DropdownMenuLabel>

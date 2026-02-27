@@ -12,10 +12,9 @@ const WorkspaceList = () => {
   return (
     <div className="min-h-screen bg-background text-foreground font-sans flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-4xl mx-auto">
-        
         {/* Header */}
         <div className="mb-10 text-left">
-          <h1 className="text-3xl font-extrabold text-foreground tracking-tight mb-3">
+          <h1 className="text-3xl font-extrabold tracking-tight mb-3">
             My Workspaces
           </h1>
           <p className="text-muted-foreground max-w-lg leading-relaxed text-[15px]">
@@ -26,12 +25,11 @@ const WorkspaceList = () => {
 
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          
           {/* Loading Skeletons */}
           {isLoading &&
-            Array(3)
-              .fill(0)
-              .map((_, i) => <WorkspaceViewSkeleton key={i} />)}
+            Array.from({ length: 3 }).map((_, i) => (
+              <WorkspaceViewSkeleton key={i} />
+            ))}
 
           {/* Workspaces */}
           {!isLoading &&
@@ -45,6 +43,7 @@ const WorkspaceList = () => {
           {/* Create Workspace Card */}
           {!isLoading && (
             <button
+              type="button"
               onClick={() => setIsModalOpen(true)}
               className="group h-full flex flex-col items-center justify-center p-6 border-[1.5px] border-dashed border-gray-200 dark:border-zinc-800 rounded-xl bg-card hover:bg-gray-50 dark:hover:bg-zinc-800/80 hover:border-gray-300 dark:hover:border-zinc-700 transition-all duration-200 text-center min-h-55"
             >

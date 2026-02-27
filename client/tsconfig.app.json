@@ -9,9 +9,7 @@
     "skipLibCheck": true,
     "ignoreDeprecations": "5.0",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
 
     /* Bundler mode */

@@ -1,17 +1,11 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import {
-  getBoardById,
-  getTasks,
-  createTask,
-  updateTask,
-  deleteTask,
-} from "../lib/api";
-import { TaskColumn } from "../components/TaskColumn";
-import { TaskModal } from "../components/TaskModal";
-import type { TaskProps } from "../components/TaskModal";
-import { Button } from "../components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getBoardById, getTasks, createTask, updateTask, deleteTask } from '../lib/api';
+import { TaskColumn } from '../components/TaskColumn';
+import { TaskModal } from '../components/TaskModal';
+import type { TaskProps } from '../components/TaskModal';
+import { Button } from '../components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 export default function BoardView() {
   const { boardId } = useParams<{ boardId: string }>();
@@ -22,25 +16,20 @@ export default function BoardView() {
   const [isLoading, setIsLoading] = useState(true);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<TaskProps | undefined>(
-    undefined,
+  const [selectedTask, setSelectedTask] = useState<TaskProps | undefined>(undefined);
+  const [newTaskStatus, setNewTaskStatus] = useState<'todo' | 'in-progress' | 'review' | 'done'>(
+    'todo'
   );
-  const [newTaskStatus, setNewTaskStatus] = useState<
-    "todo" | "in-progress" | "review" | "done"
-  >("todo");
 
   const fetchBoardAndTasks = async () => {
     if (!boardId) return;
     try {
       setIsLoading(true);
-      const [boardRes, tasksRes] = await Promise.all([
-        getBoardById(boardId),
-        getTasks(boardId),
-      ]);
+      const [boardRes, tasksRes] = await Promise.all([getBoardById(boardId), getTasks(boardId)]);
       setBoard(boardRes.data.board);
       setTasks(tasksRes.data.tasks || []);
     } catch (error) {
-      console.error("Failed to fetch board data:", error);
+      console.error('Failed to fetch board data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -58,19 +47,16 @@ export default function BoardView() {
     return <div className="p-8">Board not found.</div>;
   }
 
-  const hasWriteAccess =
-    board.userRole === "write" || board.userRole === "owner";
+  const hasWriteAccess = board.userRole === 'write' || board.userRole === 'owner';
 
   const columns = [
-    { title: "To Do", status: "todo" as const },
-    { title: "In Progress", status: "in-progress" as const },
-    { title: "Review", status: "review" as const },
-    { title: "Done", status: "done" as const },
+    { title: 'To Do', status: 'todo' as const },
+    { title: 'In Progress', status: 'in-progress' as const },
+    { title: 'Review', status: 'review' as const },
+    { title: 'Done', status: 'done' as const },
   ];
 
-  const handleOpenCreateModal = (
-    status: "todo" | "in-progress" | "review" | "done" = "todo",
-  ) => {
+  const handleOpenCreateModal = (status: 'todo' | 'in-progress' | 'review' | 'done' = 'todo') => {
     if (!hasWriteAccess) return;
     setSelectedTask(undefined);
     setNewTaskStatus(status);
@@ -92,20 +78,20 @@ export default function BoardView() {
       }
       await fetchBoardAndTasks();
     } catch (error) {
-      console.error("Failed to save task", error);
-      alert("Error saving task");
+      console.error('Failed to save task', error);
+      alert('Error saving task');
     }
   };
 
   const handleDeleteTask = async () => {
     if (!selectedTask || !hasWriteAccess) return;
-    if (!confirm("Are you sure you want to delete this task?")) return;
+    if (!confirm('Are you sure you want to delete this task?')) return;
     try {
       await deleteTask(selectedTask._id);
       setIsModalOpen(false);
       await fetchBoardAndTasks();
     } catch (error) {
-      console.error("Failed to delete task", error);
+      console.error('Failed to delete task', error);
     }
   };
 
@@ -128,7 +114,7 @@ export default function BoardView() {
             </h1>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                {board.description || "No description"}
+                {board.description || 'No description'}
               </span>
               {!hasWriteAccess && (
                 <span className="px-2 py-0.5 bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 text-[10px] font-bold uppercase rounded flex items-center gap-1">
@@ -143,7 +129,10 @@ export default function BoardView() {
       {/* Kanban Board */}
       <div className="flex gap-6 overflow-x-auto pb-6 flex-1 items-start snap-x snap-mandatory">
         {columns.map((col) => (
-          <div key={col.status} className="snap-center shrink-0 h-full min-w-70 w-[85vw] md:min-w-0 md:w-auto md:flex-1">
+          <div
+            key={col.status}
+            className="snap-center shrink-0 h-full min-w-70 w-[85vw] md:min-w-0 md:w-auto md:flex-1"
+          >
             <TaskColumn
               title={col.title}
               status={col.status}

@@ -14,7 +14,6 @@ export const useWorkspaces = () => {
   const { isAuthenticated } = useAuthStore();
   const queryClient = useQueryClient();
 
-  // FETCH WORKSPACES
   const {
     data: workspaces = [],
     isLoading,
@@ -23,14 +22,13 @@ export const useWorkspaces = () => {
     queryKey: ["workspaces"],
     queryFn: async () => {
       const res = await api.get("/workspaces");
-      return res.data.workspaces || [];
+      return res.data.workspaces ?? [];
     },
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
 
-  // CREATE WORKSPACE
   const createMutation = useMutation({
     mutationFn: async (data: { name: string; slug: string }) => {
       const res = await api.post("/workspaces", data);
@@ -41,18 +39,23 @@ export const useWorkspaces = () => {
     },
   });
 
-  //  DELETE WORKSPACE (FIXED — instant UI update)
-  const deleteMutation = useMutation({
+  const deleteMutation = useMutation<
+    string,
+    unknown,
+    string,
+    { previous?: Workspace[] }
+  >({
     mutationFn: async (workspaceId: string) => {
       await api.delete(`/workspaces/${workspaceId}`);
       return workspaceId;
     },
 
-    // optimistic update (instant removal)
+    // optimistic update
     onMutate: async (workspaceId) => {
       await queryClient.cancelQueries({ queryKey: ["workspaces"] });
 
-      const previous = queryClient.getQueryData<Workspace[]>(["workspaces"]);
+      const previous =
+        queryClient.getQueryData<Workspace[]>(["workspaces"]);
 
       queryClient.setQueryData<Workspace[]>(
         ["workspaces"],
@@ -62,14 +65,14 @@ export const useWorkspaces = () => {
       return { previous };
     },
 
-    // rollback if error
-    onError: (_err, _id, context) => {
+    // rollback on error
+    onError: (_err, _workspaceId, context) => {
       if (context?.previous) {
         queryClient.setQueryData(["workspaces"], context.previous);
       }
     },
 
-    // ensure fresh data
+    // refetch for safety
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
     },

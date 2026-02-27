@@ -1,30 +1,30 @@
-import './App.css'
-import { Route, Routes } from 'react-router-dom'
-import { useEffect } from 'react'
+import './App.css';
+import { Route, Routes } from 'react-router-dom';
+import { useEffect } from 'react';
 
-import { useAuthStore } from './store/auth-store'
+import { useAuthStore } from './store/auth-store';
 
-import Landing from './pages/Landing'
-import Signin from './pages/Signin'
-import Signup from './pages/Signup'
-import BoardView from './pages/BoardView'
-import Onboarding from './pages/Onboarding'
-import Dashboard from './pages/Dashboard'
-import WorkspaceList from './pages/WorkspaceList'
-import WorkspaceView from './pages/WorkspaceView'
-import ForgotPassword from './pages/ForgotPassword'
-import ResetPassword from './pages/ResetPassword'
-import { ProtectedRoute } from './components/ProtectedRoute'
+import Landing from './pages/Landing';
+import Signin from './pages/Signin';
+import Signup from './pages/Signup';
+import BoardView from './pages/BoardView';
+import Onboarding from './pages/Onboarding';
+import Dashboard from './pages/Dashboard';
+import WorkspaceList from './pages/WorkspaceList';
+import WorkspaceView from './pages/WorkspaceView';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
-import { Navbar } from './components/Navbar'
-import { Toaster } from './components/ui/sonner'
+import { Navbar } from './components/Navbar';
+import { Toaster } from './components/ui/sonner';
 
 function App() {
-  const { checkAuth } = useAuthStore()
+  const { checkAuth } = useAuthStore();
 
   useEffect(() => {
-    checkAuth()
-  }, [checkAuth])
+    checkAuth();
+  }, [checkAuth]);
 
   return (
     <div className="min-h-screen flex flex-col font-sans">
@@ -32,17 +32,20 @@ function App() {
       <div className="flex-1">
         <Routes>
           <Route path="/" element={<Landing />} />
-          <Route path='/signin' element={<Signin />} />
-          <Route path='/signup' element={<Signup />} />
-          <Route path='/forgot-password' element={<ForgotPassword />} />
-          <Route path='/reset-password' element={<ResetPassword />} />
-          <Route path='/onboarding' element={
-            <ProtectedRoute>
-              <Onboarding />
-            </ProtectedRoute>
-          } />
+          <Route path="/signin" element={<Signin />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route
-            path='/dashboard'
+            path="/onboarding"
+            element={
+              <ProtectedRoute>
+                <Onboarding />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
             element={
               <ProtectedRoute>
                 <Dashboard />
@@ -50,7 +53,7 @@ function App() {
             }
           />
           <Route
-            path='/workspaces'
+            path="/workspaces"
             element={
               <ProtectedRoute>
                 <WorkspaceList />
@@ -58,7 +61,7 @@ function App() {
             }
           />
           <Route
-            path='/workspaces/:workspaceId'
+            path="/workspaces/:workspaceId"
             element={
               <ProtectedRoute>
                 <WorkspaceView />
@@ -66,7 +69,7 @@ function App() {
             }
           />
           <Route
-            path='/boards/:boardId'
+            path="/boards/:boardId"
             element={
               <ProtectedRoute>
                 <BoardView />
@@ -77,7 +80,7 @@ function App() {
       </div>
       <Toaster />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

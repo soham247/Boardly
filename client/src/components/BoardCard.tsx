@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from "react";
-import { Card } from "./ui/card";
-import { MoreHorizontal, Trash2, Edit2 } from "lucide-react";
-import { deleteBoard } from "../lib/api";
-import { EditBoardModal } from "./EditBoardModal";
-import { useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from 'react';
+import { Card } from './ui/card';
+import { MoreHorizontal, Trash2, Edit2 } from 'lucide-react';
+import { deleteBoard } from '../lib/api';
+import { EditBoardModal } from './EditBoardModal';
+import { useNavigate } from 'react-router-dom';
 
 interface Member {
   userId: {
@@ -27,11 +27,11 @@ export interface BoardProps {
 }
 
 const defaultColors = [
-  "bg-blue-500",
-  "bg-purple-500",
-  "bg-green-500",
-  "bg-orange-500",
-  "bg-pink-500",
+  'bg-blue-500',
+  'bg-purple-500',
+  'bg-green-500',
+  'bg-orange-500',
+  'bg-pink-500',
 ];
 
 function timeAgo(dateString: string) {
@@ -41,41 +41,34 @@ function timeAgo(dateString: string) {
 
   if (seconds < 60) return `just now`;
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+  if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
   const days = Math.floor(hours / 24);
   if (days === 1) return `yesterday`;
   if (days < 7) return `${days} days ago`;
   const weeks = Math.floor(days / 7);
-  if (weeks < 4) return `${weeks} week${weeks > 1 ? "s" : ""} ago`;
+  if (weeks < 4) return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
   const months = Math.floor(days / 30);
-  if (months < 12) return `${months} month${months > 1 ? "s" : ""} ago`;
+  if (months < 12) return `${months} month${months > 1 ? 's' : ''} ago`;
   const years = Math.floor(months / 12);
-  return `${years} year${years > 1 ? "s" : ""} ago`;
+  return `${years} year${years > 1 ? 's' : ''} ago`;
 }
 
 export interface BoardCardProps {
   board: BoardProps;
   index: number;
-  viewMode?: "grid" | "list";
+  viewMode?: 'grid' | 'list';
   onDelete: (boardId: string) => void;
   onUpdate: () => void;
 }
 
-export function BoardCard({
-  board,
-  index,
-  viewMode = "grid",
-  onDelete,
-  onUpdate,
-}: BoardCardProps) {
+export function BoardCard({ board, index, viewMode = 'grid', onDelete, onUpdate }: BoardCardProps) {
   const navigate = useNavigate();
   const updatedAtText = timeAgo(board.updatedAt);
 
   // Assign a predictable color based on index if not provided
-  const topColor =
-    board.colorCode || defaultColors[index % defaultColors.length];
+  const topColor = board.colorCode || defaultColors[index % defaultColors.length];
 
   // Show up to 3 avatars, then a +N circle
   const displayMembers = board.members.slice(0, 3);
@@ -92,32 +85,28 @@ export function BoardCard({
         setIsMenuOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this board?")) return;
+    if (!confirm('Are you sure you want to delete this board?')) return;
     try {
       setIsDeleting(true);
       await deleteBoard(board._id);
       onDelete(board._id);
     } catch (error: any) {
-      console.error("Failed to delete board:", error);
-      alert(
-        error.response?.data?.message ||
-        "Failed to delete board. Only creator can delete it.",
-      );
+      console.error('Failed to delete board:', error);
+      alert(error.response?.data?.message || 'Failed to delete board. Only creator can delete it.');
     } finally {
       setIsDeleting(false);
       setIsMenuOpen(false);
     }
   };
 
-  const hasWriteAccess =
-    board.userRole === "write" || board.userRole === "owner";
+  const hasWriteAccess = board.userRole === 'write' || board.userRole === 'owner';
 
-  if (viewMode === "list") {
+  if (viewMode === 'list') {
     return (
       <>
         <Card
@@ -153,7 +142,7 @@ export function BoardCard({
                     />
                   ) : (
                     <span className="text-[10px] text-gray-500 font-medium">
-                      {(member.userId.fullName || member.userId.username || "?")
+                      {(member.userId.fullName || member.userId.username || '?')
                         .charAt(0)
                         .toUpperCase()}
                     </span>
@@ -204,8 +193,7 @@ export function BoardCard({
                       }}
                       disabled={isDeleting}
                     >
-                      <Trash2 className="w-3.5 h-3.5" />{" "}
-                      {isDeleting ? "Deleting..." : "Delete"}
+                      <Trash2 className="w-3.5 h-3.5" /> {isDeleting ? 'Deleting...' : 'Delete'}
                     </button>
                   </div>
                 )}
@@ -261,7 +249,7 @@ export function BoardCard({
                   />
                 ) : (
                   <span className="text-xs text-gray-500 font-medium">
-                    {(member.userId.fullName || member.userId.username || "?")
+                    {(member.userId.fullName || member.userId.username || '?')
                       .charAt(0)
                       .toUpperCase()}
                   </span>
@@ -280,7 +268,7 @@ export function BoardCard({
           {hasWriteAccess ? (
             <div className="relative" ref={menuRef}>
               <button
-                className={`text-gray-300 dark:text-gray-600 ${hasWriteAccess ? "hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 cursor-pointer" : "cursor-not-allowed opacity-50"} p-1.5 rounded-md transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 outline-none`}
+                className={`text-gray-300 dark:text-gray-600 ${hasWriteAccess ? 'hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 cursor-pointer' : 'cursor-not-allowed opacity-50'} p-1.5 rounded-md transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 outline-none`}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -314,8 +302,7 @@ export function BoardCard({
                     }}
                     disabled={isDeleting}
                   >
-                    <Trash2 className="w-3.5 h-3.5" />{" "}
-                    {isDeleting ? "Deleting..." : "Delete"}
+                    <Trash2 className="w-3.5 h-3.5" /> {isDeleting ? 'Deleting...' : 'Delete'}
                   </button>
                 </div>
               )}

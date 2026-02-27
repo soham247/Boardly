@@ -6,12 +6,12 @@ Thank you for your interest in contributing to Boarda! We welcome contributions 
 
 1.  **Star the repository** on GitHub.
 2.  **Fork the repository** on GitHub.
-2.  **Clone your fork** locally:
+3.  **Clone your fork** locally:
     ```bash
     git clone https://github.com/your-username/boarda.git
     cd boarda
     ```
-3.  **Create a new branch** for your feature or fix:
+4.  **Create a new branch** for your feature or fix:
     ```bash
     git checkout -b feature/your-feature-name
     ```

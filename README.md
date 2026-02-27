@@ -14,24 +14,29 @@ Boarda is a lightweight, developer-friendly Kanban project management tool built
 This repository contains both the client and server code.
 
 ### Prerequisites
+
 - Node.js installed on your machine.
 - Git.
 
 ### Getting Started
 
-1.  **Clone the repository**:
-    ```bash
-    git clone https://github.com/your-username/boarda.git
-    cd boarda
-    ```
+1. **Star the repository**
 
-2.  **Setup Client & Server**:
-    - **Frontend**: See [Client Setup Instructions](./client/README.md) for details on setting up the React application.
-    - **Backend**: See [Server Setup Instructions](./server/README.md) for details on setting up the Node.js/Express API (check `.env.example` for environment configuration).
+2. **Clone the repository**:
+
+   ```bash
+   git clone https://github.com/your-username/boarda.git
+   cd boarda
+   ```
+
+3. **Setup Client & Server**:
+   - **Frontend**: See [Client Setup Instructions](./client/README.md) for details on setting up the React application.
+   - **Backend**: See [Server Setup Instructions](./server/README.md) for details on setting up the Node.js/Express API (check `.env.example` for environment configuration).
 
 ## ✅ Core Features (MVP)
 
 ### 🧭 Dashboard
+
 - View all boards you own or are a member of
 - See tasks assigned to you across boards
 - Clean, text-first layout with no visual clutter
@@ -40,6 +45,7 @@ This repository contains both the client and server code.
 ---
 
 ### 🗂 Boards
+
 - Create multiple boards for different projects
 - Rename boards
 - Delete boards (admin only)
@@ -52,6 +58,7 @@ This repository contains both the client and server code.
 ---
 
 ### 📋 Tasks
+
 - Create tasks within a board
 - Edit task details
 - Delete tasks (permission-based)
@@ -67,6 +74,7 @@ This repository contains both the client and server code.
 ---
 
 ### 🔁 Kanban Workflow
+
 - Drag and drop tasks between columns
 - Automatically update task status on move
 - Optimistic UI updates for smooth interaction
@@ -74,6 +82,7 @@ This repository contains both the client and server code.
 ---
 
 ### 🧾 Task Details
+
 - Focused task detail view in a modal
 - View and edit task metadata
 - Comment on tasks
@@ -82,6 +91,7 @@ This repository contains both the client and server code.
 ---
 
 ### 👥 Collaboration & Sharing
+
 - Invite users to boards
 - Share boards with specific permissions:
   - Admin – full control
@@ -93,6 +103,7 @@ This repository contains both the client and server code.
 ---
 
 ### 🔐 Authentication & Security
+
 - Email and password authentication
 - Secure password hashing
 - JWT-based authentication
@@ -102,6 +113,7 @@ This repository contains both the client and server code.
 ---
 
 ### 💎 Subscription Tiers
+
 - **Free Tier**: Standard access to board creation and task management.
 - **Premium Tier**: Unlocks advanced features (future planned features).
 - **Tier Check**: Backend validation to ensure users access features according to their subscription status.
@@ -109,6 +121,7 @@ This repository contains both the client and server code.
 ---
 
 ### 🎨 Minimal UI/UX
+
 - Clean, distraction-free interface
 - Text-first design
 - No unnecessary animations
@@ -124,6 +137,7 @@ The following features are intentionally planned for future versions once the co
 ---
 
 ### 🔄 Realtime Collaboration
+
 - Live task updates across users
 - Real-time drag and drop syncing
 - Presence indicators
@@ -131,6 +145,7 @@ The following features are intentionally planned for future versions once the co
 ---
 
 ### 📜 Activity & History
+
 - Task activity log
 - Board-level activity feed
 - Audit trail for task changes
@@ -138,6 +153,7 @@ The following features are intentionally planned for future versions once the co
 ---
 
 ### 🔗 Integrations
+
 - GitHub issue linking
 - Import tasks from GitHub issues
 - Sync with GitHub repositories
@@ -145,6 +161,7 @@ The following features are intentionally planned for future versions once the co
 ---
 
 ### 🧩 Board Customization
+
 - Custom columns
 - Column reordering
 - Board templates (Sprints, Bugs, Docs)
@@ -152,6 +169,7 @@ The following features are intentionally planned for future versions once the co
 ---
 
 ### 🧠 Productivity Enhancements
+
 - Task search
 - Advanced filtering (priority, tags, assignee)
 - Task sorting
@@ -160,6 +178,7 @@ The following features are intentionally planned for future versions once the co
 ---
 
 ### 🌐 Public Boards
+
 - Public read-only boards
 - Shareable public URLs
 - Embeddable boards for documentation
@@ -167,6 +186,7 @@ The following features are intentionally planned for future versions once the co
 ---
 
 ### 🧑‍🤝‍🧑 Collaboration Improvements
+
 - User mentions in comments
 - Notifications
 - Comment editing and deletion
@@ -174,6 +194,7 @@ The following features are intentionally planned for future versions once the co
 ---
 
 ### 📱 Platform Expansion
+
 - Mobile-optimized UI
 - Progressive Web App (PWA)
 - Native mobile apps (future consideration)
@@ -181,6 +202,7 @@ The following features are intentionally planned for future versions once the co
 ---
 
 ### 🔐 Advanced Permissions
+
 - Granular permission controls
 - Guest users
 - Board-level audit logs
@@ -188,6 +210,7 @@ The following features are intentionally planned for future versions once the co
 ---
 
 ### 📊 Insights (Low Priority)
+
 - Task completion statistics
 - Simple progress summaries
 - Lightweight productivity insights
@@ -198,6 +221,7 @@ The following features are intentionally planned for future versions once the co
 
 OpenBoard intentionally avoids feature bloat.
 New features are added only if they:
+
 - Improve clarity
 - Preserve simplicity
 - Enhance collaboration without complexity
@@ -205,4 +229,5 @@ New features are added only if they:
 The goal is to remain minimal, predictable, and developer-friendly.
 
 ## License
+
 MIT
