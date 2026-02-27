@@ -12,10 +12,13 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Form states
-  const [fullName, setFullName] = useState(user?.fullName || '');
-  const [profession, setProfession] = useState(user?.profession || '');
-  const [avatarPreview, setAvatarPreview] = useState(user?.avatar || '');
+  // Form state
+  const [userDetails, setUserDetails] = useState({
+    fullName: user?.fullName || '',
+    profession: user?.profession || '',
+    avatarPreview: user?.avatar || '',
+  });
+  // avatar file state
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -23,13 +26,17 @@ export default function Profile() {
   // Fallback to username generator if full name is missing
   const displayName = user?.fullName || user?.username || 'User';
 
+  const handleUserDetailsChange = (field: keyof typeof userDetails, value: string) => {
+    setUserDetails((prev) => ({ ...prev, [field]: value }));
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setAvatarPreview(reader.result as string);
+        setUserDetails((p) => ({ ...p, avatarPreview: reader.result as string }));
       };
       reader.readAsDataURL(file);
     }
@@ -39,8 +46,10 @@ export default function Profile() {
     setSaving(true);
     try {
       const formData = new FormData();
-      if (fullName !== user?.fullName) formData.append('fullName', fullName);
-      if (profession !== user?.profession) formData.append('profession', profession);
+      if (userDetails.fullName !== user?.fullName)
+        formData.append('fullName', userDetails.fullName);
+      if (userDetails.profession !== user?.profession)
+        formData.append('profession', userDetails.profession);
       if (selectedFile) formData.append('avatar', selectedFile);
 
       // Only make request if there are changes
@@ -67,9 +76,11 @@ export default function Profile() {
 
   const handleCancel = () => {
     setIsEditing(false);
-    setFullName(user?.fullName || '');
-    setProfession(user?.profession || '');
-    setAvatarPreview(user?.avatar || '');
+    setUserDetails({
+      fullName: user?.fullName || '',
+      profession: user?.profession || '',
+      avatarPreview: user?.avatar || '',
+    });
     setSelectedFile(null);
   };
 
@@ -85,9 +96,9 @@ export default function Profile() {
                   className={`relative w-32 h-32 rounded-full flex items-center justify-center overflow-hidden border-4 bg-muted
                     ${user?.tier === 'Premium' ? 'border-amber-400' : 'border-background'}`}
                 >
-                  {avatarPreview ? (
+                  {userDetails.avatarPreview ? (
                     <img
-                      src={avatarPreview}
+                      src={userDetails.avatarPreview}
                       alt={displayName}
                       className="w-full h-full object-cover"
                     />
@@ -139,8 +150,8 @@ export default function Profile() {
                       </Label>
                       <Input
                         id="fullName"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
+                        value={userDetails.fullName}
+                        onChange={(e) => handleUserDetailsChange('fullName', e.target.value)}
                         placeholder="Your full name"
                         className="h-11"
                       />
@@ -237,8 +248,8 @@ export default function Profile() {
             <div className="md:col-span-2">
               {isEditing ? (
                 <Input
-                  value={profession}
-                  onChange={(e) => setProfession(e.target.value)}
+                  value={userDetails.profession}
+                  onChange={(e) => handleUserDetailsChange('profession', e.target.value)}
                   placeholder="e.g. Senior Developer"
                   className="h-11 max-w-xl"
                 />
