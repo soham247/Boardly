@@ -7,7 +7,7 @@ function Landing() {
       <Hero />
       <INFO />
     </div>
-  )
+  );
 }
 
-export default Landing
+export default Landing;

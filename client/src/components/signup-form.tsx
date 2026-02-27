@@ -1,25 +1,14 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { signupSchema, type SignupFormData } from "@/schemas/authSchema";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Github, Eye, EyeOff } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuthStore } from "@/store/auth-store";
-import { useState } from "react";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { signupSchema, type SignupFormData } from '@/schemas/authSchema';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import { Github, Eye, EyeOff } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/store/auth-store';
+import { useState } from 'react';
 
 export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const { signup, isLoading, error: serverError } = useAuthStore();
@@ -34,9 +23,9 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      email: "",
-      password: "",
-      confirmPassword: "",
+      email: '',
+      password: '',
+      confirmPassword: '',
     },
   });
 
@@ -45,9 +34,9 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { confirmPassword, ...signupData } = data;
       await signup(signupData);
-      navigate("/signin");
+      navigate('/signin');
     } catch (err) {
-      console.error("Signup failed:", err);
+      console.error('Signup failed:', err);
     }
   };
 
@@ -55,9 +44,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
     <Card {...props}>
       <CardHeader>
         <CardTitle>Create an account</CardTitle>
-        <CardDescription>
-          Enter your email and password to get started
-        </CardDescription>
+        <CardDescription>Enter your email and password to get started</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -65,12 +52,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
             {/* Email */}
             <Field>
               <FieldLabel htmlFor="email">Email</FieldLabel>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                {...register("email")}
-              />
+              <Input id="email" type="email" placeholder="m@example.com" {...register('email')} />
               {errors.email ? (
                 <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
               ) : (
@@ -86,12 +68,12 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
               <div className="relative">
                 <Input
                   id="password"
-                  type={showPassword ? "text" : "password"}
-                  {...register("password")}
+                  type={showPassword ? 'text' : 'password'}
+                  {...register('password')}
                   aria-describedby="password-visibility"
                 />
                 <span id="password-visibility" className="sr-only">
-                  {showPassword ? "Hide password" : "Show password"}
+                  {showPassword ? 'Hide password' : 'Show password'}
                 </span>
                 <button
                   type="button"
@@ -118,12 +100,12 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
               <div className="relative">
                 <Input
                   id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  {...register("confirmPassword")}
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  {...register('confirmPassword')}
                   aria-describedby="confirm-password-visibility"
                 />
                 <span id="confirm-password-visibility" className="sr-only">
-                  {showConfirmPassword ? "Hide password" : "Show password"}
+                  {showConfirmPassword ? 'Hide password' : 'Show password'}
                 </span>
                 <button
                   type="button"
@@ -146,7 +128,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
             <FieldGroup>
               <Field>
                 <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? "Creating Account..." : "Create Account"}
+                  {isLoading ? 'Creating Account...' : 'Create Account'}
                 </Button>
                 <Button
                   variant="outline"
@@ -160,7 +142,10 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                   <span>Continue with Github</span>
                 </Button>
                 <FieldDescription className="px-6 text-center mt-4">
-                  Already have an account? <Link to="/signin" className="underline">Sign in</Link>
+                  Already have an account?{' '}
+                  <Link to="/signin" className="underline">
+                    Sign in
+                  </Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>

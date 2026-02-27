@@ -1,13 +1,13 @@
-import type { TaskProps } from "./TaskModal";
-import { TaskCard } from "./TaskCard";
-import { Plus } from "lucide-react";
+import type { TaskProps } from './TaskModal';
+import { TaskCard } from './TaskCard';
+import { Plus } from 'lucide-react';
 
 interface TaskColumnProps {
   title: string;
-  status: "todo" | "in-progress" | "review" | "done";
+  status: 'todo' | 'in-progress' | 'review' | 'done';
   tasks: TaskProps[];
   onTaskClick: (task: TaskProps) => void;
-  onAddTask: (status: "todo" | "in-progress" | "review" | "done") => void;
+  onAddTask: (status: 'todo' | 'in-progress' | 'review' | 'done') => void;
   hasWriteAccess: boolean;
 }
 
@@ -32,11 +32,7 @@ export function TaskColumn({
 
       <div className="flex-1 overflow-y-auto no-scrollbar pb-2">
         {tasks.map((task) => (
-          <TaskCard
-            key={task._id}
-            task={task}
-            onClick={() => onTaskClick(task)}
-          />
+          <TaskCard key={task._id} task={task} onClick={() => onTaskClick(task)} />
         ))}
       </div>
 

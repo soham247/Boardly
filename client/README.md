@@ -5,6 +5,7 @@ The frontend application for Boarda.
 ## Setup Instructions
 
 ### Prerequisites
+
 - Node.js (v14+)
 - npm or yarn
 
@@ -36,4 +37,5 @@ npm run build
 ```
 
 ## Folder Structure
+
 (To be populated as the project grows)

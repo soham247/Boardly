@@ -1,13 +1,13 @@
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun } from 'lucide-react';
 
-import { Button } from "./ui/button";
+import { Button } from './ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { useTheme } from "./theme-provider";
+} from './ui/dropdown-menu';
+import { useTheme } from './theme-provider';
 
 export function ModeToggle() {
   const { setTheme } = useTheme();
@@ -30,19 +30,19 @@ export function ModeToggle() {
         className="font-sans rounded-xl p-1 shadow-lg border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 mt-1 min-w-32"
       >
         <DropdownMenuItem
-          onClick={() => setTheme("light")}
+          onClick={() => setTheme('light')}
           className="cursor-pointer text-gray-700 dark:text-gray-300 px-2.5 py-1.5 rounded-md focus:bg-gray-50 dark:focus:bg-zinc-800 focus:text-gray-900 dark:focus:text-gray-100 text-sm"
         >
           Light
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => setTheme("dark")}
+          onClick={() => setTheme('dark')}
           className="cursor-pointer text-gray-700 dark:text-gray-300 px-2.5 py-1.5 rounded-md focus:bg-gray-50 dark:focus:bg-zinc-800 focus:text-gray-900 dark:focus:text-gray-100 text-sm"
         >
           Dark
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => setTheme("system")}
+          onClick={() => setTheme('system')}
           className="cursor-pointer text-gray-700 dark:text-gray-300 px-2.5 py-1.5 rounded-md focus:bg-gray-50 dark:focus:bg-zinc-800 focus:text-gray-900 dark:focus:text-gray-100 text-sm"
         >
           System

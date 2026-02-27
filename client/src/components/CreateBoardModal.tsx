@@ -1,15 +1,15 @@
-import { useState, useEffect, useRef } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { createBoard, searchUsers } from "../lib/api";
-import { Search, X } from "lucide-react";
+import { useState, useEffect, useRef } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { createBoard, searchUsers } from '../lib/api';
+import { Search, X } from 'lucide-react';
 
 const boardSchema = z.object({
-  name: z.string().min(1, "Board name is required"),
+  name: z.string().min(1, 'Board name is required'),
   description: z.string().optional(),
 });
 
@@ -29,7 +29,7 @@ export function CreateBoardModal({
   workspaceId,
 }: CreateBoardModalProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
@@ -52,7 +52,7 @@ export function CreateBoardModal({
           const res = await searchUsers(searchQuery);
           setSearchResults(res.data.users);
         } catch (error) {
-          console.error("Failed to search users", error);
+          console.error('Failed to search users', error);
         } finally {
           setIsSearching(false);
         }
@@ -67,7 +67,7 @@ export function CreateBoardModal({
   useEffect(() => {
     if (!isOpen) {
       reset();
-      setSearchQuery("");
+      setSearchQuery('');
       setSearchResults([]);
       setSelectedUsers([]);
     }
@@ -75,9 +75,9 @@ export function CreateBoardModal({
 
   const handleAddUser = (user: any) => {
     if (!selectedUsers.find((u) => u._id === user._id)) {
-      setSelectedUsers([...selectedUsers, { ...user, role: "read" }]);
+      setSelectedUsers([...selectedUsers, { ...user, role: 'read' }]);
     }
-    setSearchQuery("");
+    setSearchQuery('');
     setSearchResults([]);
   };
 
@@ -86,9 +86,7 @@ export function CreateBoardModal({
   };
 
   const handleRoleChange = (userId: string, role: string) => {
-    setSelectedUsers(
-      selectedUsers.map((u) => (u._id === userId ? { ...u, role } : u)),
-    );
+    setSelectedUsers(selectedUsers.map((u) => (u._id === userId ? { ...u, role } : u)));
   };
 
   const onSubmit = async (data: BoardFormValues) => {
@@ -104,7 +102,7 @@ export function CreateBoardModal({
       onSuccess();
       onClose();
     } catch (error) {
-      console.error("Failed to create board:", error);
+      console.error('Failed to create board:', error);
     } finally {
       setIsLoading(false);
     }
@@ -129,21 +127,15 @@ export function CreateBoardModal({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Board Name</Label>
-            <Input
-              id="name"
-              {...register("name")}
-              placeholder="e.g. API Development"
-            />
-            {errors.name && (
-              <p className="text-sm text-red-500">{errors.name.message}</p>
-            )}
+            <Input id="name" {...register('name')} placeholder="e.g. API Development" />
+            {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="description">Description (Optional)</Label>
             <Input
               id="description"
-              {...register("description")}
+              {...register('description')}
               placeholder="Brief description of the board"
             />
           </div>
@@ -183,9 +175,7 @@ export function CreateBoardModal({
                       ) : (
                         <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-zinc-800 flex items-center justify-center">
                           <span className="text-[12px] text-gray-500 dark:text-gray-400 font-medium">
-                            {(user.fullName || user.username || "?")
-                              .charAt(0)
-                              .toUpperCase()}
+                            {(user.fullName || user.username || '?').charAt(0).toUpperCase()}
                           </span>
                         </div>
                       )}
@@ -193,9 +183,7 @@ export function CreateBoardModal({
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                           {user.fullName}
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          @{user.username}
-                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">@{user.username}</p>
                       </div>
                     </div>
                   ))
@@ -225,9 +213,7 @@ export function CreateBoardModal({
                       ) : (
                         <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-zinc-800 flex items-center justify-center">
                           <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
-                            {(user.fullName || user.username || "?")
-                              .charAt(0)
-                              .toUpperCase()}
+                            {(user.fullName || user.username || '?').charAt(0).toUpperCase()}
                           </span>
                         </div>
                       )}
@@ -240,9 +226,7 @@ export function CreateBoardModal({
                       <select
                         className="text-xs bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 dark:text-gray-100 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
                         value={user.role}
-                        onChange={(e) =>
-                          handleRoleChange(user._id, e.target.value)
-                        }
+                        onChange={(e) => handleRoleChange(user._id, e.target.value)}
                       >
                         <option value="read">Read</option>
                         <option value="write">Write</option>
@@ -266,7 +250,7 @@ export function CreateBoardModal({
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Creating..." : "Create Board"}
+              {isLoading ? 'Creating...' : 'Create Board'}
             </Button>
           </div>
         </form>

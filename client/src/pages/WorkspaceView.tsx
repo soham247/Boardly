@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { getBoards } from "../lib/api";
-import { useWorkspaces } from "../hooks/useWorkspaces";
-import { CreateBoardModal } from "../components/CreateBoardModal";
-import { BoardCard } from "../components/BoardCard";
-import type { BoardProps } from "../components/BoardCard";
-import { Button } from "../components/ui/button";
-import { Card } from "../components/ui/card";
-import { LayoutGrid, List, Filter, Plus, ChevronDown } from "lucide-react";
-import { WorkspaceSkeleton } from "@/components/WorkspaceSkeleton";
+import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { getBoards } from '../lib/api';
+import { useWorkspaces } from '../hooks/useWorkspaces';
+import { CreateBoardModal } from '../components/CreateBoardModal';
+import { BoardCard } from '../components/BoardCard';
+import type { BoardProps } from '../components/BoardCard';
+import { Button } from '../components/ui/button';
+import { Card } from '../components/ui/card';
+import { LayoutGrid, List, Filter, Plus, ChevronDown } from 'lucide-react';
+import { WorkspaceSkeleton } from '@/components/WorkspaceSkeleton';
 
 interface Workspace {
   _id: string;
@@ -25,11 +25,9 @@ export default function WorkspaceView() {
   const [isLoadingBoards, setIsLoadingBoards] = useState(true);
 
   // UI states
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
-  const [sortBy, setSortBy] = useState<
-    "updatedDesc" | "updatedAsc" | "nameAsc"
-  >("updatedDesc");
+  const [sortBy, setSortBy] = useState<'updatedDesc' | 'updatedAsc' | 'nameAsc'>('updatedDesc');
 
   const fetchWorkspaceAndBoards = async () => {
     if (!workspaceId) return;
@@ -39,7 +37,7 @@ export default function WorkspaceView() {
       const boardsRes = await getBoards(workspaceId);
       setBoards(boardsRes.data.boards || []);
     } catch (error) {
-      console.error("Failed to fetch data:", error);
+      console.error('Failed to fetch data:', error);
     } finally {
       setIsLoadingBoards(false);
     }
@@ -60,11 +58,11 @@ export default function WorkspaceView() {
 
   // Sorting logic
   const sortedBoards = [...boards].sort((a, b) => {
-    if (sortBy === "updatedDesc")
+    if (sortBy === 'updatedDesc')
       return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-    if (sortBy === "updatedAsc")
+    if (sortBy === 'updatedAsc')
       return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
-    if (sortBy === "nameAsc") return a.name.localeCompare(b.name);
+    if (sortBy === 'nameAsc') return a.name.localeCompare(b.name);
     return 0;
   });
 
@@ -83,7 +81,7 @@ export default function WorkspaceView() {
         <div>
           <div className="flex items-center gap-3 mb-1">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
-              {workspace ? workspace.name : "Workspace"} Boards
+              {workspace ? workspace.name : 'Workspace'} Boards
             </h1>
             <span className="px-2 py-1 bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 text-xs font-medium rounded-full">
               Free Plan
@@ -98,14 +96,14 @@ export default function WorkspaceView() {
           {/* View Toggle */}
           <div className="flex items-center bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-md p-1 shadow-sm">
             <button
-              onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded cursor-pointer ${viewMode === "grid" ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"}`}
+              onClick={() => setViewMode('grid')}
+              className={`p-1.5 rounded cursor-pointer ${viewMode === 'grid' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
-              onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded cursor-pointer ${viewMode === "list" ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"}`}
+              onClick={() => setViewMode('list')}
+              className={`p-1.5 rounded cursor-pointer ${viewMode === 'list' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
             >
               <List className="w-4 h-4" />
             </button>
@@ -130,27 +128,27 @@ export default function WorkspaceView() {
                     Sort By
                   </div>
                   <button
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-zinc-800 ${sortBy === "updatedDesc" ? "text-indigo-600 dark:text-indigo-400 font-medium bg-indigo-50/50 dark:bg-indigo-500/10" : "text-gray-700 dark:text-gray-300"}`}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-zinc-800 ${sortBy === 'updatedDesc' ? 'text-indigo-600 dark:text-indigo-400 font-medium bg-indigo-50/50 dark:bg-indigo-500/10' : 'text-gray-700 dark:text-gray-300'}`}
                     onClick={() => {
-                      setSortBy("updatedDesc");
+                      setSortBy('updatedDesc');
                       setFilterMenuOpen(false);
                     }}
                   >
                     Recently Updated
                   </button>
                   <button
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-zinc-800 ${sortBy === "updatedAsc" ? "text-indigo-600 dark:text-indigo-400 font-medium bg-indigo-50/50 dark:bg-indigo-500/10" : "text-gray-700 dark:text-gray-300"}`}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-zinc-800 ${sortBy === 'updatedAsc' ? 'text-indigo-600 dark:text-indigo-400 font-medium bg-indigo-50/50 dark:bg-indigo-500/10' : 'text-gray-700 dark:text-gray-300'}`}
                     onClick={() => {
-                      setSortBy("updatedAsc");
+                      setSortBy('updatedAsc');
                       setFilterMenuOpen(false);
                     }}
                   >
                     Oldest First
                   </button>
                   <button
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-zinc-800 ${sortBy === "nameAsc" ? "text-indigo-600 dark:text-indigo-400 font-medium bg-indigo-50/50 dark:bg-indigo-500/10" : "text-gray-700 dark:text-gray-300"}`}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-zinc-800 ${sortBy === 'nameAsc' ? 'text-indigo-600 dark:text-indigo-400 font-medium bg-indigo-50/50 dark:bg-indigo-500/10' : 'text-gray-700 dark:text-gray-300'}`}
                     onClick={() => {
-                      setSortBy("nameAsc");
+                      setSortBy('nameAsc');
                       setFilterMenuOpen(false);
                     }}
                   >
@@ -175,9 +173,9 @@ export default function WorkspaceView() {
       {/* Boards Grid/List Display */}
       <div
         className={
-          viewMode === "grid"
-            ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-            : "flex flex-col gap-4"
+          viewMode === 'grid'
+            ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'
+            : 'flex flex-col gap-4'
         }
       >
         {sortedBoards.map((board, index) => (
@@ -193,11 +191,11 @@ export default function WorkspaceView() {
 
         {/* Create New Board Card inside Grid/List */}
         <Card
-          className={`border-2 border-dashed border-gray-200 dark:border-zinc-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50/30 dark:hover:bg-indigo-500/10 transition-colors cursor-pointer flex items-center justify-center shadow-none rounded-xl bg-transparent ${viewMode === "grid" ? "flex-col p-6 h-45" : "p-4 flex-row gap-3 h-auto"}`}
+          className={`border-2 border-dashed border-gray-200 dark:border-zinc-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50/30 dark:hover:bg-indigo-500/10 transition-colors cursor-pointer flex items-center justify-center shadow-none rounded-xl bg-transparent ${viewMode === 'grid' ? 'flex-col p-6 h-45' : 'p-4 flex-row gap-3 h-auto'}`}
           onClick={() => setIsCreateModalOpen(true)}
         >
           <div
-            className={`rounded-full bg-white dark:bg-zinc-900 flex items-center justify-center border border-gray-100 dark:border-zinc-800 shadow-sm ${viewMode === "grid" ? "w-12 h-12 mb-4" : "w-8 h-8"}`}
+            className={`rounded-full bg-white dark:bg-zinc-900 flex items-center justify-center border border-gray-100 dark:border-zinc-800 shadow-sm ${viewMode === 'grid' ? 'w-12 h-12 mb-4' : 'w-8 h-8'}`}
           >
             <Plus className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           </div>
@@ -210,8 +208,8 @@ export default function WorkspaceView() {
       {/* Footer text */}
       <div className="mt-12 text-center items-center justify-center flex text-sm text-gray-400 dark:text-gray-500">
         <p>
-          Showing {boards.length + 1} of {boards.length + 1} items in{" "}
-          {workspace?.name || "Workspace"}
+          Showing {boards.length + 1} of {boards.length + 1} items in{' '}
+          {workspace?.name || 'Workspace'}
         </p>
       </div>
 

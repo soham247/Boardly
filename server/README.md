@@ -5,6 +5,7 @@ The backend API for Boarda, built with Node.js and Express.
 ## Setup Instructions
 
 ### Prerequisites
+
 - Node.js (v14+)
 - npm or yarn
 
@@ -55,6 +56,7 @@ The server will run on `http://localhost:8000` (or your defined PORT).
 ## API Documentation
 
 ### Health Check
+
 - **Endpoint**: `/api/v1/health`
 - **Method**: `GET`
 - **Response**:

@@ -1,24 +1,16 @@
-import { ArrowRight, User, Users } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowRight, User, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function WorkspaceCard({ workspace }: { workspace: Record<string, any> }) {
   const memberCount = (workspace.members?.length || 0) + 1;
   const isPersonal = memberCount === 1;
 
   return (
-    <Link
-      to={`/workspaces/${workspace._id}`}
-      key={workspace._id}
-      className="block group"
-    >
+    <Link to={`/workspaces/${workspace._id}`} key={workspace._id} className="block group">
       <div className="h-full bg-card border border-gray-200 dark:border-zinc-800 rounded-xl p-6 transition-all duration-200 hover:border-gray-300 dark:hover:border-zinc-700 hover:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.4)] relative flex flex-col">
         <div className="flex justify-between items-start mb-6">
           <div className="w-10 h-10 rounded-lg bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400">
-            {isPersonal ? (
-              <User className="w-5 h-5" />
-            ) : (
-              <Users className="w-5 h-5" />
-            )}
+            {isPersonal ? <User className="w-5 h-5" /> : <Users className="w-5 h-5" />}
           </div>
           <ArrowRight className="w-4 h-4 text-gray-300 dark:text-gray-600 group-hover:text-gray-400 dark:group-hover:text-gray-400 transition-colors" />
         </div>
@@ -28,10 +20,10 @@ export function WorkspaceCard({ workspace }: { workspace: Record<string, any> })
             {workspace.name}
           </h3>
           <div className="flex items-center text-[13px] text-gray-500 dark:text-gray-400 gap-1.5">
-            <span>{isPersonal ? "Private" : "Shared"}</span>
+            <span>{isPersonal ? 'Private' : 'Shared'}</span>
             <span className="text-gray-300 dark:text-gray-600">•</span>
             <span>
-              {memberCount} {memberCount === 1 ? "member" : "members"}
+              {memberCount} {memberCount === 1 ? 'member' : 'members'}
             </span>
           </div>
         </div>
@@ -47,9 +39,9 @@ export function WorkspaceCard({ workspace }: { workspace: Record<string, any> })
               <div className="flex -space-x-1.5 shrink-0">
                 {[...Array(Math.min(3, memberCount))].map((_, i) => {
                   const colors = [
-                    "bg-blue-100 text-blue-600",
-                    "bg-emerald-100 text-emerald-600",
-                    "bg-amber-100 text-amber-600",
+                    'bg-blue-100 text-blue-600',
+                    'bg-emerald-100 text-emerald-600',
+                    'bg-amber-100 text-amber-600',
                   ];
                   return (
                     <div

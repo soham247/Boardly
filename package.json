@@ -1,0 +1,33 @@
+{
+  "name": "boardly",
+  "version": "1.0.0",
+  "description": "Boarda is a lightweight, developer-friendly Kanban project management tool built for teams and open-source contributors who want clarity without clutter.",
+  "main": "index.js",
+  "scripts": {
+    "format": "prettier --write .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,css,md}": [
+      "prettier --write"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soham247/Boardly.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/soham247/Boardly/issues"
+  },
+  "homepage": "https://github.com/soham247/Boardly#readme",
+  "devDependencies": {
+    "eslint": "^10.0.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1"
+  }
+}

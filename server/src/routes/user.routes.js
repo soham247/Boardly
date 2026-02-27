@@ -1,52 +1,52 @@
-import { Router } from "express";
+import { Router } from 'express';
 import {
-    loginUser,
-    logoutUser,
-    registerUser,
-    refreshAccessToken,
-    updateProfile,
-    getCurrentUser,
-    searchUsers,
-    finishOnboarding,
-    forgotPassword,
-    verifyOTP,
-    resetPassword
-} from "../controllers/user.controller.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+  loginUser,
+  logoutUser,
+  registerUser,
+  refreshAccessToken,
+  updateProfile,
+  getCurrentUser,
+  searchUsers,
+  finishOnboarding,
+  forgotPassword,
+  verifyOTP,
+  resetPassword,
+} from '../controllers/user.controller.js';
+import { verifyJWT } from '../middlewares/auth.middleware.js';
 import multer from 'multer';
 
-const router = Router()
+const router = Router();
 
 const storage = multer.memoryStorage();
 const upload = multer({
-    storage,
-    limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB limit
-        files: 1
-    },
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith("image/")) {
-            cb(null, true);
-        } else {
-            cb(new Error("Only images are allowed"), false);
-        }
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+    files: 1,
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only images are allowed'), false);
     }
-})
+  },
+});
 
 router.route('/update-profile').patch(verifyJWT, upload.single('avatar'), updateProfile);
-router.route("/me").get(verifyJWT, getCurrentUser);
-router.route("/search").get(verifyJWT, searchUsers);
-router.route("/onboarding").post(verifyJWT, finishOnboarding);
+router.route('/me').get(verifyJWT, getCurrentUser);
+router.route('/search').get(verifyJWT, searchUsers);
+router.route('/onboarding').post(verifyJWT, finishOnboarding);
 
-router.route("/register").post(registerUser)
-router.route("/login").post(loginUser)
+router.route('/register').post(registerUser);
+router.route('/login').post(loginUser);
 
 //secured routes
-router.route("/logout").post(verifyJWT, logoutUser)
-router.route("/refresh-token").post(refreshAccessToken)
+router.route('/logout').post(verifyJWT, logoutUser);
+router.route('/refresh-token').post(refreshAccessToken);
 
-router.route("/forgot-password").post(forgotPassword)
-router.route("/verify-otp").post(verifyOTP)
-router.route("/reset-password").post(resetPassword)
+router.route('/forgot-password').post(forgotPassword);
+router.route('/verify-otp').post(verifyOTP);
+router.route('/reset-password').post(resetPassword);
 
-export default router
+export default router;

@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { useWorkspaces } from "../hooks/useWorkspaces";
-import { CreateWorkspaceModal } from "../components/CreateWorkspaceModal";
-import { Plus } from "lucide-react";
-import { WorkspaceCard } from "@/components/WorkspaceCard";
-import { WorkspaceViewSkeleton } from "@/components/WorkspaceViewSkeleton";
+import { useState } from 'react';
+import { useWorkspaces } from '../hooks/useWorkspaces';
+import { CreateWorkspaceModal } from '../components/CreateWorkspaceModal';
+import { Plus } from 'lucide-react';
+import { WorkspaceCard } from '@/components/WorkspaceCard';
+import { WorkspaceViewSkeleton } from '@/components/WorkspaceViewSkeleton';
 
 const WorkspaceList = () => {
   const { workspaces, isLoading } = useWorkspaces();
@@ -17,22 +17,21 @@ const WorkspaceList = () => {
             My Workspaces
           </h1>
           <p className="text-muted-foreground max-w-lg leading-relaxed text-[15px]">
-            Select a workspace to continue where you left off, or start a new
-            journey with your team.
+            Select a workspace to continue where you left off, or start a new journey with your
+            team.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {isLoading &&
-            Array(3).fill(0).map((_, i) => <WorkspaceViewSkeleton key={i} />)
-          }
-          {
-            workspaces.map((workspace) => (
-              <WorkspaceCard key={workspace._id} workspace={workspace} />
-            ))
-          }
+            Array(3)
+              .fill(0)
+              .map((_, i) => <WorkspaceViewSkeleton key={i} />)}
+          {workspaces.map((workspace) => (
+            <WorkspaceCard key={workspace._id} workspace={workspace} />
+          ))}
 
-          {!isLoading &&
+          {!isLoading && (
             <>
               <button
                 onClick={() => setIsModalOpen(true)}
@@ -47,7 +46,9 @@ const WorkspaceList = () => {
                 <p className="text-[13px] text-gray-500 dark:text-gray-400 max-w-50 leading-relaxed">
                   Setup a new environment for your next big project.
                 </p>
-              </button></>}
+              </button>
+            </>
+          )}
         </div>
 
         <div className="mt-20 text-center text-[12px] font-medium text-gray-400">
