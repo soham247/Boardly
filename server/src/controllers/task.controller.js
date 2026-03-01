@@ -16,7 +16,7 @@ async function isWsOwnerOrAdmin(board, userId) {
 
 const createTask = async (req, res) => {
   try {
-    const { title, description, boardId, assignedTo, status, priority, dueDate } = req.body;
+    const { title, description, boardId, assignedTo, status, priority, dueDate, tags } = req.body;
 
     if (!title || !boardId) {
       return res.status(400).json({ message: 'Title and boardId are required' });
@@ -66,10 +66,12 @@ const createTask = async (req, res) => {
       status: status || 'todo',
       priority: priority || 'low',
       dueDate,
+      tags: Array.isArray(tags) ? tags : [],
     });
 
     await task.populate('assignedTo', 'fullName username avatar');
     await task.populate('createdBy', 'fullName username avatar');
+    await task.populate('tags');
 
     return res.status(201).json({
       message: 'Task created successfully',
@@ -106,6 +108,7 @@ const getTasksByBoard = async (req, res) => {
     const tasks = await Task.find({ boardId })
       .populate('assignedTo', 'fullName username avatar')
       .populate('createdBy', 'fullName username avatar')
+      .populate('tags')
       .sort({ updatedAt: -1 });
 
     return res.status(200).json({
@@ -120,7 +123,7 @@ const getTasksByBoard = async (req, res) => {
 const updateTask = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, assignedTo, status, priority, dueDate } = req.body;
+    const { title, description, assignedTo, status, priority, dueDate, tags } = req.body;
 
     const task = await Task.findById(id);
     if (!task) {
@@ -168,11 +171,13 @@ const updateTask = async (req, res) => {
     if (status !== undefined) task.status = status;
     if (priority !== undefined) task.priority = priority;
     if (dueDate !== undefined) task.dueDate = dueDate;
+    if (tags !== undefined) task.tags = Array.isArray(tags) ? tags : [];
 
     await task.save();
 
     await task.populate('assignedTo', 'fullName username avatar');
     await task.populate('createdBy', 'fullName username avatar');
+    await task.populate('tags');
 
     return res.status(200).json({
       message: 'Task updated successfully',

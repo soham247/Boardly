@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getBoardById, getTasks, createTask, updateTask, deleteTask } from '../lib/api';
+import { getBoardById, getTasks, createTask, updateTask, deleteTask, getTags, createTag } from '../lib/api';
 import { TaskColumn } from '../components/TaskColumn';
 import { TaskModal } from '../components/TaskModal';
 import type { TaskProps } from '../components/TaskModal';
@@ -13,6 +13,7 @@ export default function BoardView() {
 
   const [board, setBoard] = useState<any>(null);
   const [tasks, setTasks] = useState<TaskProps[]>([]);
+  const [availableTags, setAvailableTags] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,9 +26,14 @@ export default function BoardView() {
     if (!boardId) return;
     try {
       setIsLoading(true);
-      const [boardRes, tasksRes] = await Promise.all([getBoardById(boardId), getTasks(boardId)]);
+      const [boardRes, tasksRes, tagsRes] = await Promise.all([
+        getBoardById(boardId),
+        getTasks(boardId),
+        getTags(boardId)
+      ]);
       setBoard(boardRes.data.board);
       setTasks(tasksRes.data.tasks || []);
+      setAvailableTags(tagsRes.data.tags || []);
     } catch (error) {
       console.error('Failed to fetch board data:', error);
     } finally {
@@ -155,6 +161,13 @@ export default function BoardView() {
         defaultStatus={newTaskStatus}
         boardMembers={board.members}
         isReadOnly={!hasWriteAccess}
+        availableTags={availableTags}
+        onCreateTag={async (tagData) => {
+          if (!boardId) throw new Error('No board ID');
+          const res = await createTag(boardId, tagData);
+          setAvailableTags((prev) => [...prev, res.data.tag]);
+          return res.data.tag;
+        }}
       />
     </div>
   );
