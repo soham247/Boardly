@@ -1,6 +1,7 @@
 import { Task } from '../models/task.model.js';
 import { Board } from '../models/board.model.js';
 import { Workspace } from '../models/workspace.model.js';
+import { Tag } from '../models/tag.model.js';
 import mongoose from 'mongoose';
 
 // Check if a user is an owner or admin of the board's workspace
@@ -57,6 +58,15 @@ const createTask = async (req, res) => {
       }
     }
 
+    let validTags = [];
+    if (Array.isArray(tags) && tags.length > 0) {
+      const dbTags = await Tag.find({
+        _id: { $in: tags },
+        $or: [{ boardId: null }, { boardId: new mongoose.Types.ObjectId(boardId) }]
+      });
+      validTags = dbTags.map(tag => tag._id.toString());
+    }
+
     const task = await Task.create({
       title,
       description,
@@ -66,7 +76,7 @@ const createTask = async (req, res) => {
       status: status || 'todo',
       priority: priority || 'low',
       dueDate,
-      tags: Array.isArray(tags) ? tags : [],
+      tags: validTags,
     });
 
     await task.populate('assignedTo', 'fullName username avatar');
@@ -171,7 +181,17 @@ const updateTask = async (req, res) => {
     if (status !== undefined) task.status = status;
     if (priority !== undefined) task.priority = priority;
     if (dueDate !== undefined) task.dueDate = dueDate;
-    if (tags !== undefined) task.tags = Array.isArray(tags) ? tags : [];
+    if (tags !== undefined) {
+      if (Array.isArray(tags) && tags.length > 0) {
+        const dbTags = await Tag.find({
+          _id: { $in: tags },
+          $or: [{ boardId: null }, { boardId: new mongoose.Types.ObjectId(task.boardId) }]
+        });
+        task.tags = dbTags.map(t => t._id.toString());
+      } else {
+        task.tags = [];
+      }
+    }
 
     await task.save();
 

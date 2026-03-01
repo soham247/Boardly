@@ -13,10 +13,14 @@ const DEFAULT_TAGS = [
 ];
 
 const initializeDefaultTags = async () => {
-    const existingCount = await Tag.countDocuments({ boardId: null });
-    if (existingCount === 0) {
-        await Tag.insertMany(DEFAULT_TAGS.map(tag => ({ ...tag, boardId: null, createdBy: null })));
-    }
+    const bulkOps = DEFAULT_TAGS.map(tag => ({
+        updateOne: {
+            filter: { name: tag.name, boardId: null },
+            update: { $setOnInsert: { ...tag, boardId: null, createdBy: null } },
+            upsert: true
+        }
+    }));
+    await Tag.bulkWrite(bulkOps);
 };
 
 export const getTags = async (req, res) => {
@@ -27,6 +31,32 @@ export const getTags = async (req, res) => {
 
         const query = { $or: [{ boardId: null }] };
         if (boardId) {
+            const board = await Board.findById(boardId);
+            if (!board) {
+                return res.status(404).json({ message: 'Board not found' });
+            }
+
+            // Check if user has read permission
+            let hasReadAccess = false;
+            if (board.createdBy.toString() === req.user._id.toString()) {
+                hasReadAccess = true;
+            } else if (board.members.some(m => m.userId.toString() === req.user._id.toString())) {
+                hasReadAccess = true;
+            } else {
+                const workspace = await Workspace.findById(board.workspaceId);
+                const wsMember = workspace?.members.find((m) => {
+                    const mid = m.user?._id ?? m.user;
+                    return mid?.toString() === req.user._id.toString();
+                });
+                if (wsMember && (wsMember.role === 'owner' || wsMember.role === 'admin')) {
+                    hasReadAccess = true;
+                }
+            }
+
+            if (!hasReadAccess) {
+                return res.status(403).json({ message: "You don't have access to this board's tags" });
+            }
+
             query.$or.push({ boardId: new mongoose.Types.ObjectId(boardId) });
         }
 

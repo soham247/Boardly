@@ -28,4 +28,6 @@ const tagSchema = new Schema(
     }
 );
 
+tagSchema.index({ boardId: 1, name: 1 }, { unique: true });
+
 export const Tag = mongoose.model('Tag', tagSchema);

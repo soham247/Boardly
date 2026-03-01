@@ -26,14 +26,20 @@ export default function BoardView() {
     if (!boardId) return;
     try {
       setIsLoading(true);
-      const [boardRes, tasksRes, tagsRes] = await Promise.all([
+      const [boardRes, tasksRes] = await Promise.all([
         getBoardById(boardId),
-        getTasks(boardId),
-        getTags(boardId)
+        getTasks(boardId)
       ]);
       setBoard(boardRes.data.board);
       setTasks(tasksRes.data.tasks || []);
-      setAvailableTags(tagsRes.data.tags || []);
+
+      try {
+        const tagsRes = await getTags(boardId);
+        setAvailableTags(tagsRes.data.tags || []);
+      } catch (tagError) {
+        console.error('Failed to fetch tags:', tagError);
+        setAvailableTags([]);
+      }
     } catch (error) {
       console.error('Failed to fetch board data:', error);
     } finally {
