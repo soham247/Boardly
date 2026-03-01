@@ -22,8 +22,16 @@ const workspaceSchema = new Schema(
     },
     members: [
       {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
+        user: {
+          type: Schema.Types.ObjectId,
+          ref: 'User',
+          required: true,
+        },
+        role: {
+          type: String,
+          enum: ['owner', 'admin', 'shared'],
+          default: 'shared',
+        },
       },
     ],
   },

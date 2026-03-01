@@ -7,6 +7,7 @@ import {
   deleteWorkspace,
   addMember,
   removeMember,
+  updateMemberRole,
 } from '../controllers/workspace.controller.js';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
 
@@ -21,5 +22,7 @@ router.route('/:id').get(getWorkspaceById).patch(updateWorkspace).delete(deleteW
 router.route('/:id/members').post(addMember);
 
 router.route('/:id/members/:memberId').delete(removeMember);
+
+router.route('/:id/members/:memberId/role').patch(updateMemberRole);
 
 export default router;

@@ -1,6 +1,18 @@
 import { Task } from '../models/task.model.js';
 import { Board } from '../models/board.model.js';
+import { Workspace } from '../models/workspace.model.js';
 import mongoose from 'mongoose';
+
+// Check if a user is an owner or admin of the board's workspace
+async function isWsOwnerOrAdmin(board, userId) {
+  const workspace = await Workspace.findById(board.workspaceId);
+  if (!workspace) return false;
+  const member = workspace.members.find((m) => {
+    const mid = m.user?._id ?? m.user;
+    return mid?.toString() === userId.toString();
+  });
+  return member && (member.role === 'owner' || member.role === 'admin');
+}
 
 const createTask = async (req, res) => {
   try {
@@ -15,7 +27,7 @@ const createTask = async (req, res) => {
       return res.status(404).json({ message: 'Board not found' });
     }
 
-    // Check write permission
+    // Check write permission — board-level or workspace owner/admin
     let hasWriteAccess = false;
     if (board.createdBy.toString() === req.user._id.toString()) {
       hasWriteAccess = true;
@@ -24,6 +36,9 @@ const createTask = async (req, res) => {
       if (member && member.role === 'write') {
         hasWriteAccess = true;
       }
+    }
+    if (!hasWriteAccess) {
+      hasWriteAccess = await isWsOwnerOrAdmin(board, req.user._id);
     }
 
     if (!hasWriteAccess) {
@@ -74,13 +89,18 @@ const getTasksByBoard = async (req, res) => {
       return res.status(404).json({ message: 'Board not found' });
     }
 
-    // Check read permission
+    // Check read permission — board member or workspace owner/admin
     const isMember =
       board.members.some((m) => m.userId.toString() === req.user._id.toString()) ||
       board.createdBy.toString() === req.user._id.toString();
 
     if (!isMember) {
-      return res.status(403).json({ message: "You don't have access to view tasks on this board" });
+      const wsAccess = await isWsOwnerOrAdmin(board, req.user._id);
+      if (!wsAccess) {
+        return res
+          .status(403)
+          .json({ message: "You don't have access to view tasks on this board" });
+      }
     }
 
     const tasks = await Task.find({ boardId })
@@ -112,7 +132,7 @@ const updateTask = async (req, res) => {
       return res.status(404).json({ message: 'Board not found' });
     }
 
-    // Check write permission
+    // Check write permission — board-level or workspace owner/admin
     let hasWriteAccess = false;
     if (board.createdBy.toString() === req.user._id.toString()) {
       hasWriteAccess = true;
@@ -121,6 +141,9 @@ const updateTask = async (req, res) => {
       if (member && member.role === 'write') {
         hasWriteAccess = true;
       }
+    }
+    if (!hasWriteAccess) {
+      hasWriteAccess = await isWsOwnerOrAdmin(board, req.user._id);
     }
 
     if (!hasWriteAccess) {
@@ -174,7 +197,7 @@ const deleteTask = async (req, res) => {
       return res.status(404).json({ message: 'Board not found' });
     }
 
-    // Check write permission
+    // Check write permission — board-level or workspace owner/admin
     let hasWriteAccess = false;
     if (board.createdBy.toString() === req.user._id.toString()) {
       hasWriteAccess = true;
@@ -183,6 +206,9 @@ const deleteTask = async (req, res) => {
       if (member && member.role === 'write') {
         hasWriteAccess = true;
       }
+    }
+    if (!hasWriteAccess) {
+      hasWriteAccess = await isWsOwnerOrAdmin(board, req.user._id);
     }
 
     if (!hasWriteAccess) {

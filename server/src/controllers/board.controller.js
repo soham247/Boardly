@@ -15,9 +15,15 @@ const createBoard = async (req, res) => {
       return res.status(404).json({ message: 'Workspace not found' });
     }
 
-    // Check if user is a member of the workspace
-    if (!workspace.members.some((member) => member.toString() === req.user._id.toString())) {
+    // Check if user is a workspace member
+    const wsMember = workspace.members.find((m) => m.user.toString() === req.user._id.toString());
+    if (!wsMember) {
       return res.status(403).json({ message: 'You are not a member of this workspace' });
+    }
+
+    // Only owner and admin can create boards
+    if (!['owner', 'admin'].includes(wsMember.role)) {
+      return res.status(403).json({ message: 'Only owner or admin can create boards' });
     }
 
     // Enforce board tier limits
@@ -42,8 +48,12 @@ const createBoard = async (req, res) => {
             role: m.role || 'read',
           });
 
-          if (!workspace.members.some((member) => member.toString() === m.userId.toString())) {
-            workspace.members.push(m.userId);
+          // If user not yet in workspace, add as shared member
+          const alreadyInWs = workspace.members.some(
+            (wm) => wm.user.toString() === m.userId.toString()
+          );
+          if (!alreadyInWs) {
+            workspace.members.push({ user: m.userId, role: 'shared' });
             isWorkspaceUpdated = true;
           }
         }
@@ -88,17 +98,24 @@ const getBoards = async (req, res) => {
       return res.status(404).json({ message: 'Workspace not found' });
     }
 
-    if (!workspace.members.some((member) => member.toString() === userId.toString())) {
+    const wsMember = workspace.members.find((m) => {
+      const mid = m.user?._id ?? m.user;
+      return mid?.toString() === userId.toString();
+    });
+    if (!wsMember) {
       return res.status(403).json({ message: 'You are not a member of this workspace' });
     }
 
+    // Owner/Admin see ALL boards; shared members see only boards they belong to
+    const matchFilter = {
+      workspaceId: new mongoose.Types.ObjectId(workspaceId),
+    };
+    if (wsMember.role === 'shared') {
+      matchFilter['members.userId'] = userId;
+    }
+
     const boards = await Board.aggregate([
-      {
-        $match: {
-          workspaceId: new mongoose.Types.ObjectId(workspaceId),
-          'members.userId': userId,
-        },
-      },
+      { $match: matchFilter },
       {
         $addFields: {
           userRole: {
@@ -121,7 +138,7 @@ const getBoards = async (req, res) => {
                       ],
                     },
                   },
-                  in: '$$matchedMember.role',
+                  in: { $ifNull: ['$$matchedMember.role', 'write'] },
                 },
               },
             },
@@ -169,7 +186,7 @@ const getBoardById = async (req, res) => {
                       ],
                     },
                   },
-                  in: '$$matchedMember.role',
+                  in: { $ifNull: ['$$matchedMember.role', 'write'] },
                 },
               },
             },
@@ -184,11 +201,24 @@ const getBoardById = async (req, res) => {
 
     const board = boards[0];
 
-    const isMember = board.members.some(
+    // Check board-level membership first
+    const isBoardMember = board.members.some(
       (member) => member.userId.toString() === req.user._id.toString()
     );
-    if (!isMember) {
-      return res.status(403).json({ message: "You don't have access to this board" });
+
+    // If not a direct board member, check if they're a workspace owner/admin
+    if (!isBoardMember) {
+      const workspace = await Workspace.findById(board.workspaceId);
+      const wsMember = workspace?.members.find((m) => {
+        const mid = m.user?._id ?? m.user;
+        return mid?.toString() === req.user._id.toString();
+      });
+      const isWsAdminOrOwner = wsMember && (wsMember.role === 'owner' || wsMember.role === 'admin');
+      if (!isWsAdminOrOwner) {
+        return res.status(403).json({ message: "You don't have access to this board" });
+      }
+      // Workspace owner/admin gets write access
+      board.userRole = 'write';
     }
 
     await Board.populate(board, { path: 'members.userId', select: 'fullName username avatar' });
@@ -214,8 +244,20 @@ const updateBoard = async (req, res) => {
     }
 
     const member = board.members.find((m) => m.userId.toString() === req.user._id.toString());
+    const hasBoardWrite = member && member.role === 'write';
 
-    if (!member || member.role !== 'write') {
+    // Fallback: workspace owner/admin always has write access
+    let hasWriteAccess = hasBoardWrite || board.createdBy.toString() === req.user._id.toString();
+    if (!hasWriteAccess) {
+      const workspace = await Workspace.findById(board.workspaceId);
+      const wsMember = workspace?.members.find((m) => {
+        const mid = m.user?._id ?? m.user;
+        return mid?.toString() === req.user._id.toString();
+      });
+      hasWriteAccess = wsMember && (wsMember.role === 'owner' || wsMember.role === 'admin');
+    }
+
+    if (!hasWriteAccess) {
       return res.status(403).json({ message: "You don't have write permission for this board" });
     }
 
@@ -245,8 +287,9 @@ const updateBoard = async (req, res) => {
 
             boardMembers.push({ userId: m.userId, role: m.role || 'read' });
 
-            if (workspace && !workspace.members.some((wMember) => wMember.toString() === mIdStr)) {
-              workspace.members.push(m.userId);
+            // Add to workspace as shared member if not already present
+            if (workspace && !workspace.members.some((wm) => wm.user.toString() === mIdStr)) {
+              workspace.members.push({ user: m.userId, role: 'shared' });
               isWorkspaceUpdated = true;
             }
           }
@@ -273,9 +316,9 @@ const updateBoard = async (req, res) => {
 
             if (
               workspace &&
-              !workspace.members.some((wMember) => wMember.toString() === m.userId.toString())
+              !workspace.members.some((wm) => wm.user.toString() === m.userId.toString())
             ) {
-              workspace.members.push(m.userId);
+              workspace.members.push({ user: m.userId, role: 'shared' });
               isWorkspaceUpdated = true;
             }
           }

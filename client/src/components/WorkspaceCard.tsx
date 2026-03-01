@@ -1,4 +1,4 @@
-import { ArrowRight, User, Users, Trash2 } from 'lucide-react';
+import { ArrowRight, User, Users, Trash2, Crown, Shield, Share2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useWorkspaces } from '@/hooks/useWorkspaces';
@@ -20,11 +20,37 @@ type Props = {
   workspace: Record<string, any>;
 };
 
+const roleBadgeConfig = {
+  owner: {
+    label: 'Owner',
+    icon: Crown,
+    className:
+      'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20',
+  },
+  admin: {
+    label: 'Admin',
+    icon: Shield,
+    className:
+      'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20',
+  },
+  shared: {
+    label: 'Shared',
+    icon: Share2,
+    className:
+      'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20',
+  },
+};
+
 export function WorkspaceCard({ workspace }: Props) {
   const navigate = useNavigate();
 
-  const memberCount = (workspace.members?.length || 0) + 1;
+  const memberCount = workspace.members?.length || 1;
   const isPersonal = memberCount === 1;
+  const userRole: 'owner' | 'admin' | 'shared' = workspace.userRole || 'shared';
+  const isOwner = userRole === 'owner';
+
+  const badge = roleBadgeConfig[userRole];
+  const BadgeIcon = badge.icon;
 
   const { deleteWorkspace } = useWorkspaces();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -73,46 +99,49 @@ export function WorkspaceCard({ workspace }: Props) {
           onPointerDown={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()}
         >
-          {/* DELETE */}
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <button
-                aria-label="Delete workspace"
-                className="p-1.5 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
-                onPointerDown={(e) => e.stopPropagation()}
-                onMouseDown={(e) => e.stopPropagation()}
+          {/* DELETE — only visible to owner */}
+          {isOwner && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button
+                  aria-label="Delete workspace"
+                  className="p-1.5 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => e.stopPropagation()}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </AlertDialogTrigger>
+
+              <AlertDialogContent
                 onClick={(e) => e.stopPropagation()}
                 onKeyDown={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
               >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </AlertDialogTrigger>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Workspace</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete "{workspace.name}"? This action cannot be
+                    undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
 
-            <AlertDialogContent
-              onClick={(e) => e.stopPropagation()}
-              onKeyDown={(e) => e.stopPropagation()}
-              onPointerDown={(e) => e.stopPropagation()}
-            >
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete Workspace</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete "{workspace.name}"? This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
 
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-
-                <AlertDialogAction
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  {isDeleting ? 'Deleting...' : 'Delete'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    {isDeleting ? 'Deleting...' : 'Delete'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
 
           {/* ARROW */}
           <ArrowRight
@@ -131,7 +160,7 @@ export function WorkspaceCard({ workspace }: Props) {
         </h3>
 
         <div className="flex items-center text-[13px] text-gray-500 dark:text-gray-400 gap-1.5">
-          <span>{isPersonal ? 'Private' : 'Shared'}</span>
+          <span>{isPersonal ? 'Private' : 'Team'}</span>
           <span className="text-gray-300 dark:text-gray-600">•</span>
           <span>
             {memberCount} {memberCount === 1 ? 'member' : 'members'}
@@ -152,12 +181,12 @@ export function WorkspaceCard({ workspace }: Props) {
           ))}
         </div>
 
-        <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase text-gray-500">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-30"></span>
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 m-0.5 bg-emerald-500"></span>
-          </span>
-          Active now
+        {/* Role Badge */}
+        <div
+          className={`flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-semibold uppercase ${badge.className}`}
+        >
+          <BadgeIcon className="w-3 h-3" />
+          {badge.label}
         </div>
       </div>
     </div>

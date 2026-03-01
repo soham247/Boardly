@@ -7,13 +7,15 @@ import { BoardCard } from '../components/BoardCard';
 import type { BoardProps } from '../components/BoardCard';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
-import { LayoutGrid, List, Filter, Plus, ChevronDown } from 'lucide-react';
+import { LayoutGrid, List, Filter, Plus, ChevronDown, Users } from 'lucide-react';
 import { WorkspaceSkeleton } from '@/components/WorkspaceSkeleton';
+import { ManageMembersModal } from '../components/ManageMembersModal';
 
 interface Workspace {
   _id: string;
   name: string;
   slug: string;
+  userRole?: 'owner' | 'admin' | 'shared';
 }
 
 export default function WorkspaceView() {
@@ -22,6 +24,7 @@ export default function WorkspaceView() {
   const [boards, setBoards] = useState<BoardProps[]>([]);
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [isLoadingBoards, setIsLoadingBoards] = useState(true);
 
   // UI states
@@ -47,10 +50,13 @@ export default function WorkspaceView() {
     if (workspaces && workspaceId) {
       const currentWs = workspaces.find((w: any) => w._id === workspaceId);
       if (currentWs) {
-        setWorkspace(currentWs);
+        setWorkspace(currentWs as Workspace);
       }
     }
   }, [workspaces, workspaceId]);
+
+  const userRole = workspace?.userRole || 'shared';
+  const canCreateBoard = userRole === 'owner' || userRole === 'admin';
 
   useEffect(() => {
     fetchWorkspaceAndBoards();
@@ -85,6 +91,17 @@ export default function WorkspaceView() {
             </h1>
             <span className="px-2 py-1 bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 text-xs font-medium rounded-full">
               Free Plan
+            </span>
+            <span
+              className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${
+                userRole === 'owner'
+                  ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                  : userRole === 'admin'
+                    ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                    : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+              }`}
+            >
+              {userRole}
             </span>
           </div>
           <p className="text-gray-500 dark:text-gray-400 text-left">
@@ -159,14 +176,28 @@ export default function WorkspaceView() {
             )}
           </div>
 
-          {/* New Board Button */}
-          <Button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 h-9 flex items-center gap-2 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            New Board
-          </Button>
+          {/* Members Button — only for owner/admin */}
+          {canCreateBoard && (
+            <Button
+              variant="outline"
+              onClick={() => setIsMembersModalOpen(true)}
+              className="text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-zinc-900 hover:bg-gray-100 dark:hover:bg-zinc-800 border-none px-4 py-2 h-9 flex items-center gap-2"
+            >
+              <Users className="w-4 h-4" />
+              Members
+            </Button>
+          )}
+
+          {/* New Board Button — only for owner/admin */}
+          {canCreateBoard && (
+            <Button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 h-9 flex items-center gap-2 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              New Board
+            </Button>
+          )}
         </div>
       </div>
 
@@ -189,20 +220,22 @@ export default function WorkspaceView() {
           />
         ))}
 
-        {/* Create New Board Card inside Grid/List */}
-        <Card
-          className={`border-2 border-dashed border-gray-200 dark:border-zinc-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50/30 dark:hover:bg-indigo-500/10 transition-colors cursor-pointer flex items-center justify-center shadow-none rounded-xl bg-transparent ${viewMode === 'grid' ? 'flex-col p-6 h-45' : 'p-4 flex-row gap-3 h-auto'}`}
-          onClick={() => setIsCreateModalOpen(true)}
-        >
-          <div
-            className={`rounded-full bg-white dark:bg-zinc-900 flex items-center justify-center border border-gray-100 dark:border-zinc-800 shadow-sm ${viewMode === 'grid' ? 'w-12 h-12 mb-4' : 'w-8 h-8'}`}
+        {/* Create New Board Card inside Grid/List — only for owner/admin */}
+        {canCreateBoard && (
+          <Card
+            className={`border-2 border-dashed border-gray-200 dark:border-zinc-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50/30 dark:hover:bg-indigo-500/10 transition-colors cursor-pointer flex items-center justify-center shadow-none rounded-xl bg-transparent ${viewMode === 'grid' ? 'flex-col p-6 h-45' : 'p-4 flex-row gap-3 h-auto'}`}
+            onClick={() => setIsCreateModalOpen(true)}
           >
-            <Plus className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-          </div>
-          <span className="font-semibold text-gray-700 dark:text-gray-300 text-sm">
-            Create new board
-          </span>
-        </Card>
+            <div
+              className={`rounded-full bg-white dark:bg-zinc-900 flex items-center justify-center border border-gray-100 dark:border-zinc-800 shadow-sm ${viewMode === 'grid' ? 'w-12 h-12 mb-4' : 'w-8 h-8'}`}
+            >
+              <Plus className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <span className="font-semibold text-gray-700 dark:text-gray-300 text-sm">
+              Create new board
+            </span>
+          </Card>
+        )}
       </div>
 
       {/* Footer text */}
@@ -218,6 +251,13 @@ export default function WorkspaceView() {
         onClose={() => setIsCreateModalOpen(false)}
         onSuccess={fetchWorkspaceAndBoards}
         workspaceId={workspaceId!}
+      />
+
+      <ManageMembersModal
+        isOpen={isMembersModalOpen}
+        onClose={() => setIsMembersModalOpen(false)}
+        workspaceId={workspaceId!}
+        userRole={userRole}
       />
     </div>
   );
