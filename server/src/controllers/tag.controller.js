@@ -31,6 +31,11 @@ export const getTags = async (req, res) => {
 
         const query = { $or: [{ boardId: null }] };
         if (boardId) {
+
+            if (!mongoose.Types.ObjectId.isValid(boardId)) {
+                return res.status(400).json({ message: 'Invalid board id' });
+            }
+            
             const board = await Board.findById(boardId);
             if (!board) {
                 return res.status(404).json({ message: 'Board not found' });
@@ -78,6 +83,10 @@ export const createTag = async (req, res) => {
 
         if (!name || !color) {
             return res.status(400).json({ message: 'Name and color are required' });
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(boardId)) {
+            return res.status(400).json({ message: 'Invalid board id' });
         }
 
         const board = await Board.findById(boardId);
