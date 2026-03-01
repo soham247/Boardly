@@ -1,13 +1,15 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth-store';
 import { Card, CardContent, CardHeader } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { PencilLine, Camera, Verified, LockKeyhole, UserRound } from 'lucide-react';
+import { PencilLine, Camera, Verified, LockKeyhole, UserRound, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Profile() {
+  const navigate = useNavigate();
   const { user, updateProfile } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -86,6 +88,13 @@ export default function Profile() {
 
   return (
     <div className="container max-w-4xl py-10 px-4 mx-auto">
+      <Button
+        variant="ghost"
+        onClick={() => navigate(-1)}
+        className="mb-4 -ml-4 text-muted-foreground hover:text-foreground flex items-center gap-2 w-fit"
+      >
+        <ArrowLeft className="w-4 h-4" /> Back
+      </Button>
       <Card className="border-0 shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card">
         <CardHeader className="p-8 pb-4 border-b">
           <div className="flex flex-col sm:flex-row items-center gap-6 justify-between">
