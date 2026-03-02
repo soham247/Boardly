@@ -43,6 +43,7 @@ import oauthRouter from './routes/oauth.routes.js';
 import boardRouter from './routes/board.routes.js';
 import taskRouter from './routes/task.routes.js';
 import tagRouter from './routes/tag.routes.js';
+import notificationRouter from './routes/notification.routes.js';
 
 // routes declaration
 app.use('/api/v1', healthRouter);
@@ -52,6 +53,7 @@ app.use('/api/v1/oauth', oauthRouter);
 app.use('/api/v1/boards', boardRouter);
 app.use('/api/v1/tasks', taskRouter);
 app.use('/api/v1/tags', tagRouter);
+app.use('/api/v1/notifications', notificationRouter);
 
 app.use(errorMiddleware);
 
