@@ -2,12 +2,20 @@ import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
+export interface TagProps {
+  _id: string;
+  name: string;
+  color: string;
+  boardId?: string | null;
+}
+
 export interface TaskProps {
   _id: string;
   title: string;
   description?: string;
   status: 'todo' | 'in-progress' | 'review' | 'done';
   priority: 'low' | 'medium' | 'high';
+  tags?: TagProps[];
   dueDate?: string;
   assignedTo?: {
     _id: string;
@@ -42,6 +50,8 @@ interface TaskModalProps {
   defaultStatus?: 'todo' | 'in-progress' | 'review' | 'done';
   boardMembers: Member[];
   isReadOnly?: boolean;
+  availableTags?: TagProps[];
+  onCreateTag?: (data: { name: string; color: string }) => Promise<TagProps>;
 }
 
 export function TaskModal({
@@ -53,6 +63,8 @@ export function TaskModal({
   defaultStatus = 'todo',
   boardMembers,
   isReadOnly = false,
+  availableTags = [],
+  onCreateTag,
 }: TaskModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -60,7 +72,12 @@ export function TaskModal({
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('low');
   const [assignedTo, setAssignedTo] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [isCreatingTag, setIsCreatingTag] = useState(false);
+  const [newTagName, setNewTagName] = useState('');
+  const [newTagColor, setNewTagColor] = useState('#3b82f6');
 
   useEffect(() => {
     if (task) {
@@ -74,6 +91,7 @@ export function TaskModal({
       } else {
         setDueDate('');
       }
+      setTags(task.tags?.map(t => t._id) || []);
     } else {
       setTitle('');
       setDescription('');
@@ -81,6 +99,7 @@ export function TaskModal({
       setPriority('low');
       setAssignedTo('');
       setDueDate('');
+      setTags([]);
     }
   }, [task, isOpen, defaultStatus]);
 
@@ -97,6 +116,7 @@ export function TaskModal({
         priority,
         assignedTo: assignedTo || undefined,
         dueDate: dueDate || undefined,
+        tags,
       });
       onClose();
     } catch (error) {
@@ -209,6 +229,68 @@ export function TaskModal({
                 className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-gray-100 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 [&::-webkit-calendar-picker-indicator]:dark:invert"
                 disabled={isReadOnly}
               />
+            </div>
+
+            <div className="space-y-2 col-span-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Tags</label>
+              <div className="flex flex-wrap gap-2">
+                {availableTags?.map((tag) => (
+                  <button
+                    key={tag._id}
+                    type="button"
+                    onClick={() => {
+                      if (isReadOnly) return;
+                      setTags(prev => prev.includes(tag._id) ? prev.filter(t => t !== tag._id) : [...prev, tag._id])
+                    }}
+                    className={`px-2 py-1 text-xs font-semibold rounded-md border transition-all ${tags.includes(tag._id) ? 'ring-2 ring-offset-1 ring-offset-white dark:ring-offset-zinc-950 ring-indigo-500 shadow-sm' : 'opacity-60 scale-95 hover:opacity-100 hover:scale-100'
+                      }`}
+                    style={{ backgroundColor: tag.color + '20', color: tag.color, borderColor: tag.color }}
+                    disabled={isReadOnly}
+                  >
+                    {tag.name}
+                  </button>
+                ))}
+              </div>
+
+              {!isReadOnly && onCreateTag && (
+                <div className="mt-3 flex gap-2 items-center">
+                  <input
+                    type="text"
+                    placeholder="New custom tag"
+                    value={newTagName}
+                    onChange={e => setNewTagName(e.target.value)}
+                    className="flex h-8 w-32 items-center rounded-md border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-gray-100 px-2 py-1 text-xs"
+                  />
+                  <input
+                    type="color"
+                    value={newTagColor}
+                    onChange={e => setNewTagColor(e.target.value)}
+                    className="h-8 w-8 rounded cursor-pointer border-0 p-0"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs font-medium dark:text-gray-100 dark:hover:bg-zinc-800"
+                    disabled={!newTagName || isCreatingTag}
+                    onClick={async () => {
+                      if (!onCreateTag) return;
+                      try {
+                        setIsCreatingTag(true);
+                        const newTag = await onCreateTag({ name: newTagName, color: newTagColor });
+                        setTags(prev => [...prev, newTag._id]);
+                        setNewTagName('');
+                      } catch (error) {
+                        console.error(error);
+                      } finally {
+                        setIsCreatingTag(false);
+                      }
+                    }}
+                  >
+                    {isCreatingTag ? '...' : 'Add Tag'}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
 

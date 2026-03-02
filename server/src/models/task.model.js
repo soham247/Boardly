@@ -38,6 +38,12 @@ const taskSchema = new Schema(
     dueDate: {
       type: Date,
     },
+    tags: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Tag',
+      },
+    ],
   },
   {
     timestamps: true,

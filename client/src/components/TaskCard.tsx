@@ -21,14 +21,25 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
       className="bg-white dark:bg-zinc-950 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800 hover:shadow-md dark:hover:shadow-[0_4px_12px_rgba(0,0,0,0.5)] transition-shadow cursor-pointer mb-3 group"
     >
       <div className="flex justify-between items-start mb-2">
+        <div className="flex flex-wrap gap-1.5 flex-1 pr-2">
+          {task.tags && task.tags.length > 0 && task.tags.map((tag) => (
+            <span
+              key={tag._id}
+              className="text-[10px] font-bold tracking-wider px-1.5 py-0.5 rounded-md"
+              style={{ backgroundColor: tag.color + '20', color: tag.color, border: `1px solid ${tag.color}40` }}
+            >
+              {tag.name}
+            </span>
+          ))}
+        </div>
         <span
-          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${priorityColors[task.priority]}`}
+          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${priorityColors[task.priority]}`}
         >
           {task.priority}
         </span>
       </div>
 
-      <h4 className="text-gray-900 dark:text-gray-100 font-semibold text-sm mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+      <h4 className="text-gray-900 dark:text-gray-100 font-semibold text-sm mt-1 mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
         {task.title}
       </h4>
 

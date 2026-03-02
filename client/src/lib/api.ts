@@ -130,6 +130,7 @@ export const createTask = async (data: {
   status?: string;
   priority?: string;
   dueDate?: string;
+  tags?: string[];
 }) => {
   return await api.post('/tasks', data);
 };
@@ -143,6 +144,7 @@ export const updateTask = async (
     status?: string;
     priority?: string;
     dueDate?: string;
+    tags?: string[];
   }
 ) => {
   return await api.patch(`/tasks/${taskId}`, data);
@@ -150,6 +152,14 @@ export const updateTask = async (
 
 export const deleteTask = async (taskId: string) => {
   return await api.delete(`/tasks/${taskId}`);
+};
+
+export const getTags = async (boardId: string) => {
+  return await api.get(`/tags/${boardId}`);
+};
+
+export const createTag = async (boardId: string, data: { name: string; color: string }) => {
+  return await api.post(`/tags/${boardId}/create`, data);
 };
 
 export default api;

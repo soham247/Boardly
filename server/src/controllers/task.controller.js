@@ -1,6 +1,7 @@
 import { Task } from '../models/task.model.js';
 import { Board } from '../models/board.model.js';
 import { Workspace } from '../models/workspace.model.js';
+import { Tag } from '../models/tag.model.js';
 import mongoose from 'mongoose';
 
 // Check if a user is an owner or admin of the board's workspace
@@ -16,7 +17,7 @@ async function isWsOwnerOrAdmin(board, userId) {
 
 const createTask = async (req, res) => {
   try {
-    const { title, description, boardId, assignedTo, status, priority, dueDate } = req.body;
+    const { title, description, boardId, assignedTo, status, priority, dueDate, tags } = req.body;
 
     if (!title || !boardId) {
       return res.status(400).json({ message: 'Title and boardId are required' });
@@ -57,6 +58,15 @@ const createTask = async (req, res) => {
       }
     }
 
+    let validTags = [];
+    if (Array.isArray(tags) && tags.length > 0) {
+      const dbTags = await Tag.find({
+        _id: { $in: tags },
+        $or: [{ boardId: null }, { boardId: new mongoose.Types.ObjectId(boardId) }]
+      });
+      validTags = dbTags.map(tag => tag._id.toString());
+    }
+
     const task = await Task.create({
       title,
       description,
@@ -66,10 +76,12 @@ const createTask = async (req, res) => {
       status: status || 'todo',
       priority: priority || 'low',
       dueDate,
+      tags: validTags,
     });
 
     await task.populate('assignedTo', 'fullName username avatar');
     await task.populate('createdBy', 'fullName username avatar');
+    await task.populate('tags');
 
     return res.status(201).json({
       message: 'Task created successfully',
@@ -106,6 +118,7 @@ const getTasksByBoard = async (req, res) => {
     const tasks = await Task.find({ boardId })
       .populate('assignedTo', 'fullName username avatar')
       .populate('createdBy', 'fullName username avatar')
+      .populate('tags')
       .sort({ updatedAt: -1 });
 
     return res.status(200).json({
@@ -120,7 +133,7 @@ const getTasksByBoard = async (req, res) => {
 const updateTask = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, assignedTo, status, priority, dueDate } = req.body;
+    const { title, description, assignedTo, status, priority, dueDate, tags } = req.body;
 
     const task = await Task.findById(id);
     if (!task) {
@@ -168,11 +181,23 @@ const updateTask = async (req, res) => {
     if (status !== undefined) task.status = status;
     if (priority !== undefined) task.priority = priority;
     if (dueDate !== undefined) task.dueDate = dueDate;
+    if (tags !== undefined) {
+      if (Array.isArray(tags) && tags.length > 0) {
+        const dbTags = await Tag.find({
+          _id: { $in: tags },
+          $or: [{ boardId: null }, { boardId: new mongoose.Types.ObjectId(task.boardId) }]
+        });
+        task.tags = dbTags.map(t => t._id.toString());
+      } else {
+        task.tags = [];
+      }
+    }
 
     await task.save();
 
     await task.populate('assignedTo', 'fullName username avatar');
     await task.populate('createdBy', 'fullName username avatar');
+    await task.populate('tags');
 
     return res.status(200).json({
       message: 'Task updated successfully',
