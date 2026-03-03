@@ -112,7 +112,7 @@ export default function BoardView() {
   const handleDragEnd = async (result: DropResult) => {
     if (!result.destination || !hasWriteAccess) return;
 
-    const { source, destination } = result;
+    const { source, destination, draggableId } = result;
 
     if (source.droppableId === destination.droppableId && source.index === destination.index) {
       return;
@@ -131,7 +131,13 @@ export default function BoardView() {
             .filter((t) => t.status === destination.droppableId)
             .sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
 
-      const [movedTask] = sourceColTasks.splice(source.index, 1);
+      const movedTaskIndex = sourceColTasks.findIndex((t) => t._id === draggableId);
+      if (movedTaskIndex === -1) return prevTasks;
+
+      const [movedTask] = sourceColTasks.splice(movedTaskIndex, 1);
+
+      if (!movedTask) return prevTasks;
+
       movedTask.status = destination.droppableId as any;
 
       destColTasks.splice(destination.index, 0, movedTask);
