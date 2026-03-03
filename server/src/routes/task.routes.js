@@ -4,6 +4,7 @@ import {
   getTasksByBoard,
   updateTask,
   deleteTask,
+  reorderTasks,
 } from '../controllers/task.controller.js';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
 
@@ -13,6 +14,7 @@ router.use(verifyJWT);
 
 router.post('/', createTask);
 router.get('/board/:boardId', getTasksByBoard);
+router.put('/board/:boardId/reorder', reorderTasks);
 router.patch('/:id', updateTask);
 router.delete('/:id', deleteTask);
 

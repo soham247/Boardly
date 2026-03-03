@@ -252,4 +252,63 @@ const deleteTask = async (req, res) => {
   }
 };
 
-export { createTask, getTasksByBoard, updateTask, deleteTask };
+const reorderTasks = async (req, res) => {
+  try {
+    const { boardId } = req.params;
+    const { tasks } = req.body; // Array of { _id, status, order }
+
+    if (!Array.isArray(tasks)) {
+      return res.status(400).json({ message: 'Invalid tasks data' });
+    }
+
+    const board = await Board.findById(boardId);
+    if (!board) {
+      return res.status(404).json({ message: 'Board not found' });
+    }
+
+    // Check write permission — board-level or workspace owner/admin
+    let hasWriteAccess = false;
+    if (board.createdBy.toString() === req.user._id.toString()) {
+      hasWriteAccess = true;
+    } else {
+      const member = board.members.find((m) => m.userId.toString() === req.user._id.toString());
+      if (member && member.role === 'write') {
+        hasWriteAccess = true;
+      }
+    }
+    if (!hasWriteAccess) {
+      hasWriteAccess = await isWsOwnerOrAdmin(board, req.user._id);
+    }
+
+    if (!hasWriteAccess) {
+      return res
+        .status(403)
+        .json({ message: "You don't have write permission to reorder tasks on this board" });
+    }
+
+    // Prepare bulk write operations
+    const bulkOps = tasks.map(task => ({
+      updateOne: {
+        filter: { _id: task._id, boardId },
+        update: {
+          $set: {
+            status: task.status,
+            order: task.order
+          }
+        }
+      }
+    }));
+
+    if (bulkOps.length > 0) {
+      await Task.bulkWrite(bulkOps);
+    }
+
+    return res.status(200).json({
+      message: 'Tasks reordered successfully',
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export { createTask, getTasksByBoard, updateTask, deleteTask, reorderTasks };

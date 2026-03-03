@@ -30,6 +30,10 @@ const taskSchema = new Schema(
       enum: ['todo', 'in-progress', 'review', 'done'],
       default: 'todo',
     },
+    order: {
+      type: Number,
+      default: 0,
+    },
     priority: {
       type: String,
       enum: ['low', 'medium', 'high'],

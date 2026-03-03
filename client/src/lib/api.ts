@@ -162,4 +162,8 @@ export const createTag = async (boardId: string, data: { name: string; color: st
   return await api.post(`/tags/${boardId}/create`, data);
 };
 
+export const reorderTasks = async (boardId: string, tasks: { _id: string; status: string; order: number }[]) => {
+  return await api.put(`/tasks/board/${boardId}/reorder`, { tasks });
+};
+
 export default api;
