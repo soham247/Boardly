@@ -1,6 +1,7 @@
 import type { TaskProps } from './TaskModal';
 import { TaskCard } from './TaskCard';
 import { Plus } from 'lucide-react';
+import { Droppable } from '@hello-pangea/dnd';
 
 interface TaskColumnProps {
   title: string;
@@ -30,10 +31,24 @@ export function TaskColumn({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-2">
-        {tasks.map((task) => (
-          <TaskCard key={task._id} task={task} onClick={() => onTaskClick(task)} />
-        ))}
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-2 min-h-[50px]">
+        <Droppable droppableId={status}>
+          {(provided, snapshot) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className={`min-h-[100px] h-full transition-colors rounded-xl ${snapshot.isDraggingOver ? 'bg-gray-100/50 dark:bg-zinc-800/50' : ''
+                }`}
+            >
+              {tasks
+                .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+                .map((task, index) => (
+                  <TaskCard key={task._id} task={task} index={index} onClick={() => onTaskClick(task)} />
+                ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
       </div>
 
       {hasWriteAccess && (

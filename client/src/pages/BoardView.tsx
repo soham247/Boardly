@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getBoardById, getTasks, createTask, updateTask, deleteTask, getTags, createTag } from '../lib/api';
+import { getBoardById, getTasks, createTask, updateTask, deleteTask, getTags, createTag, reorderTasks } from '../lib/api';
 import { TaskColumn } from '../components/TaskColumn';
+import { DragDropContext } from '@hello-pangea/dnd';
+import type { DropResult } from '@hello-pangea/dnd';
 import { TaskModal } from '../components/TaskModal';
 import type { TaskProps } from '../components/TaskModal';
 import { Button } from '../components/ui/button';
@@ -107,6 +109,78 @@ export default function BoardView() {
     }
   };
 
+  const handleDragEnd = async (result: DropResult) => {
+    if (!result.destination || !hasWriteAccess || !boardId) return;
+
+    const { source, destination, draggableId } = result;
+
+    if (source.droppableId === destination.droppableId && source.index === destination.index) {
+      return;
+    }
+
+    const buildReorderResult = (prevTasks: TaskProps[], source: any, destination: any, draggableId: string) => {
+      const newTasks = prevTasks.map(t => ({ ...t }));
+
+      const sourceColTasks = newTasks
+        .filter((t) => t.status === source.droppableId)
+        .sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+
+      const destColTasks =
+        source.droppableId === destination.droppableId
+          ? sourceColTasks
+          : newTasks
+            .filter((t) => t.status === destination.droppableId)
+            .sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+
+      const movedTaskIndex = sourceColTasks.findIndex((t) => t._id === draggableId);
+      if (movedTaskIndex === -1) return { computedTasks: prevTasks, tasksToUpdateItems: [] };
+
+      const [movedTask] = sourceColTasks.splice(movedTaskIndex, 1);
+      if (!movedTask) return { computedTasks: prevTasks, tasksToUpdateItems: [] };
+
+      movedTask.status = destination.droppableId as any;
+      destColTasks.splice(destination.index, 0, movedTask);
+
+      const tasksToUpdateItems: any[] = [];
+      if (source.droppableId !== destination.droppableId) {
+        sourceColTasks.forEach((t, i) => {
+          t.order = i;
+          tasksToUpdateItems.push({ _id: t._id, status: t.status, order: i });
+        });
+      }
+      destColTasks.forEach((t, i) => {
+        t.order = i;
+        tasksToUpdateItems.push({ _id: t._id, status: t.status, order: i });
+      });
+
+      const otherTasks = newTasks.filter(
+        (t) => t.status !== source.droppableId && t.status !== destination.droppableId
+      );
+
+      const finalTasks = [
+        ...otherTasks,
+        ...sourceColTasks,
+        ...(source.droppableId === destination.droppableId ? [] : destColTasks),
+      ];
+
+      return { computedTasks: finalTasks, tasksToUpdateItems };
+    };
+
+    const previousTasks = tasks;
+    const { computedTasks, tasksToUpdateItems } = buildReorderResult(tasks, source, destination, draggableId);
+
+    if (tasksToUpdateItems.length === 0) return;
+
+    setTasks(computedTasks);
+
+    try {
+      await reorderTasks(boardId, tasksToUpdateItems);
+    } catch (err) {
+      console.error('Reorder failed, rolling back state', err);
+      setTasks(() => previousTasks);
+    }
+  };
+
   return (
     <div className="container mx-auto p-6 md:p-8 max-w-full font-sans flex flex-col h-[calc(100vh-64px)] overflow-hidden">
       {/* Header */}
@@ -139,23 +213,25 @@ export default function BoardView() {
       </div>
 
       {/* Kanban Board */}
-      <div className="flex gap-6 overflow-x-auto pb-6 flex-1 items-start snap-x snap-mandatory">
-        {columns.map((col) => (
-          <div
-            key={col.status}
-            className="snap-center shrink-0 h-full min-w-70 w-[85vw] md:min-w-0 md:w-auto md:flex-1"
-          >
-            <TaskColumn
-              title={col.title}
-              status={col.status}
-              tasks={tasks.filter((t) => t.status === col.status)}
-              onTaskClick={handleOpenEditModal}
-              onAddTask={handleOpenCreateModal}
-              hasWriteAccess={hasWriteAccess}
-            />
-          </div>
-        ))}
-      </div>
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <div className="flex gap-6 overflow-x-auto pb-6 flex-1 items-start snap-x snap-mandatory">
+          {columns.map((col) => (
+            <div
+              key={col.status}
+              className="snap-center shrink-0 h-full min-w-70 w-[85vw] md:min-w-0 md:w-auto md:flex-1"
+            >
+              <TaskColumn
+                title={col.title}
+                status={col.status}
+                tasks={tasks.filter((t) => t.status === col.status)}
+                onTaskClick={handleOpenEditModal}
+                onAddTask={handleOpenCreateModal}
+                hasWriteAccess={hasWriteAccess}
+              />
+            </div>
+          ))}
+        </div>
+      </DragDropContext>
 
       {/* Modal */}
       <TaskModal

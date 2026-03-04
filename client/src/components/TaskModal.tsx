@@ -15,6 +15,7 @@ export interface TaskProps {
   description?: string;
   status: 'todo' | 'in-progress' | 'review' | 'done';
   priority: 'low' | 'medium' | 'high';
+  order?: number;
   tags?: TagProps[];
   dueDate?: string;
   assignedTo?: {
