@@ -261,6 +261,22 @@ const reorderTasks = async (req, res) => {
       return res.status(400).json({ message: 'Invalid tasks data' });
     }
 
+    const validStatuses = ['todo', 'in-progress', 'review', 'done'];
+    const taskIds = [];
+    for (let i = 0; i < tasks.length; i++) {
+      const t = tasks[i];
+      if (!t || !t._id || (typeof t._id !== 'string' && typeof t._id !== 'object')) {
+        return res.status(400).json({ message: `Invalid _id at index ${i}` });
+      }
+      if (!validStatuses.includes(t.status)) {
+        return res.status(400).json({ message: `Invalid status at index ${i}` });
+      }
+      if (typeof t.order !== 'number') {
+        return res.status(400).json({ message: `Invalid order at index ${i}` });
+      }
+      taskIds.push(t._id);
+    }
+
     const board = await Board.findById(boardId);
     if (!board) {
       return res.status(404).json({ message: 'Board not found' });
@@ -284,6 +300,14 @@ const reorderTasks = async (req, res) => {
       return res
         .status(403)
         .json({ message: "You don't have write permission to reorder tasks on this board" });
+    }
+
+    if (taskIds.length > 0) {
+      const uniqueIds = [...new Set(taskIds)];
+      const matchedCount = await Task.countDocuments({ _id: { $in: uniqueIds }, boardId });
+      if (matchedCount !== uniqueIds.length) {
+        return res.status(422).json({ message: 'One or more invalid task IDs or tasks do not belong to this board' });
+      }
     }
 
     // Prepare bulk write operations

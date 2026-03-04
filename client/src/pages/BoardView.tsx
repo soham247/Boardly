@@ -110,7 +110,7 @@ export default function BoardView() {
   };
 
   const handleDragEnd = async (result: DropResult) => {
-    if (!result.destination || !hasWriteAccess) return;
+    if (!result.destination || !hasWriteAccess || !boardId) return;
 
     const { source, destination, draggableId } = result;
 
@@ -118,12 +118,13 @@ export default function BoardView() {
       return;
     }
 
-    setTasks((prevTasks) => {
-      const newTasks = Array.from(prevTasks);
+    const buildReorderResult = (prevTasks: TaskProps[], source: any, destination: any, draggableId: string) => {
+      const newTasks = prevTasks.map(t => ({ ...t }));
 
       const sourceColTasks = newTasks
         .filter((t) => t.status === source.droppableId)
         .sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+
       const destColTasks =
         source.droppableId === destination.droppableId
           ? sourceColTasks
@@ -132,14 +133,12 @@ export default function BoardView() {
             .sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
 
       const movedTaskIndex = sourceColTasks.findIndex((t) => t._id === draggableId);
-      if (movedTaskIndex === -1) return prevTasks;
+      if (movedTaskIndex === -1) return { computedTasks: prevTasks, tasksToUpdateItems: [] };
 
       const [movedTask] = sourceColTasks.splice(movedTaskIndex, 1);
-
-      if (!movedTask) return prevTasks;
+      if (!movedTask) return { computedTasks: prevTasks, tasksToUpdateItems: [] };
 
       movedTask.status = destination.droppableId as any;
-
       destColTasks.splice(destination.index, 0, movedTask);
 
       const tasksToUpdateItems: any[] = [];
@@ -154,22 +153,32 @@ export default function BoardView() {
         tasksToUpdateItems.push({ _id: t._id, status: t.status, order: i });
       });
 
-      if (boardId) {
-        reorderTasks(boardId, tasksToUpdateItems).catch((err) => {
-          console.error('Reorder failed', err);
-        });
-      }
-
       const otherTasks = newTasks.filter(
         (t) => t.status !== source.droppableId && t.status !== destination.droppableId
       );
 
-      return [
+      const finalTasks = [
         ...otherTasks,
         ...sourceColTasks,
         ...(source.droppableId === destination.droppableId ? [] : destColTasks),
       ];
-    });
+
+      return { computedTasks: finalTasks, tasksToUpdateItems };
+    };
+
+    const previousTasks = tasks;
+    const { computedTasks, tasksToUpdateItems } = buildReorderResult(tasks, source, destination, draggableId);
+
+    if (tasksToUpdateItems.length === 0) return;
+
+    setTasks(computedTasks);
+
+    try {
+      await reorderTasks(boardId, tasksToUpdateItems);
+    } catch (err) {
+      console.error('Reorder failed, rolling back state', err);
+      setTasks(() => previousTasks);
+    }
   };
 
   return (
