@@ -1,12 +1,13 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth-store';
+import Loading from '../pages/Loading';
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user, isLoading } = useAuthStore();
   const location = useLocation();
 
   if (isLoading) {
-    return <div>Loading...</div>; // Or a proper loading spinner
+    return <Loading />;
   }
 
   if (!isAuthenticated) {
