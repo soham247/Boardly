@@ -24,11 +24,15 @@ export interface PaginatedTasksResponse {
 }
 
 // Separate hook for fetching tasks by status with pagination
-export const useTasksByStatus = (boardId?: string, status?: 'todo' | 'in-progress' | 'review' | 'done', limit = 10) => {
+export const useTasksByStatus = (
+  boardId?: string,
+  status?: 'todo' | 'in-progress' | 'review' | 'done',
+  limit = 10
+) => {
   const { isAuthenticated } = useAuthStore();
 
   return useInfiniteQuery<PaginatedTasksResponse>({
-    queryKey: ['tasks', boardId, status],
+    queryKey: ['tasks', boardId, status, limit],
     queryFn: async ({ pageParam }) => {
       if (!boardId || !status) {
         return { message: '', tasks: [], nextCursor: null, hasMore: false };

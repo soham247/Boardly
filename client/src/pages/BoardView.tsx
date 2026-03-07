@@ -43,6 +43,7 @@ export default function BoardView() {
     deleteTask,
     createTag: createTagQuery,
     reorderTasks: reorderTasksQuery,
+    isReordering,
   } = useTasks(boardId);
 
   const { board: queryBoard, isLoadingBoard } = useBoards(undefined, boardId);
@@ -54,15 +55,36 @@ export default function BoardView() {
   const doneTasksQuery = useTasksByStatus(boardId, 'done', 10);
 
   // Store queries in a map for easy access
-  const columnTaskQueries = useMemo(() => ({
-    'todo': todoTasksQuery,
-    'in-progress': inProgressTasksQuery,
-    'review': reviewTasksQuery,
-    'done': doneTasksQuery,
-  }), [todoTasksQuery, inProgressTasksQuery, reviewTasksQuery, doneTasksQuery]);
+  const columnTaskQueries = useMemo(
+    () => ({
+      todo: todoTasksQuery,
+      'in-progress': inProgressTasksQuery,
+      review: reviewTasksQuery,
+      done: doneTasksQuery,
+    }),
+    [
+      todoTasksQuery.data,
+      todoTasksQuery.isLoading,
+      todoTasksQuery.hasNextPage,
+      todoTasksQuery.isFetchingNextPage,
+      inProgressTasksQuery.data,
+      inProgressTasksQuery.isLoading,
+      inProgressTasksQuery.hasNextPage,
+      inProgressTasksQuery.isFetchingNextPage,
+      reviewTasksQuery.data,
+      reviewTasksQuery.isLoading,
+      reviewTasksQuery.hasNextPage,
+      reviewTasksQuery.isFetchingNextPage,
+      doneTasksQuery.data,
+      doneTasksQuery.isLoading,
+      doneTasksQuery.hasNextPage,
+      doneTasksQuery.isFetchingNextPage,
+    ]
+  );
 
   // Combine tasks from all columns
   useEffect(() => {
+    if (isReordering) return;
     const allTasks: TaskProps[] = [];
     columns.forEach((col) => {
       const query = columnTaskQueries[col.status];
@@ -73,18 +95,46 @@ export default function BoardView() {
       }
     });
     setTasks(allTasks);
-  }, [columnTaskQueries]);
+  }, [
+    todoTasksQuery.data,
+    inProgressTasksQuery.data,
+    reviewTasksQuery.data,
+    doneTasksQuery.data,
+    isReordering,
+  ]);
 
   // Check if any column is loading
-  const isLoadingTasks = columns.some(
-    (col) => columnTaskQueries[col.status]?.isLoading
-  );
+  const isLoadingTasks = columns.some((col) => columnTaskQueries[col.status]?.isLoading);
 
   useEffect(() => {
     if (queryBoard) {
       setBoard(queryBoard);
     }
   }, [queryBoard]);
+
+  // Memoize column tasks to prevent unnecessary re-renders
+  // Must be above early returns so hooks are called unconditionally
+  const columnTasksMap = useMemo(() => {
+    const map: Record<ColumnStatus, TaskProps[]> = {
+      todo: [],
+      'in-progress': [],
+      review: [],
+      done: [],
+    };
+
+    tasks.forEach((t) => {
+      if (t.status in map) {
+        map[t.status as ColumnStatus].push(t);
+      }
+    });
+
+    // Sort each column
+    columns.forEach((col) => {
+      map[col.status].sort((a, b) => (a.order || 0) - (b.order || 0));
+    });
+
+    return map;
+  }, [tasks]);
 
   if (isLoadingBoard || isLoadingTags || isLoadingTasks) {
     return <div className="p-8">Loading board...</div>;
@@ -216,19 +266,12 @@ export default function BoardView() {
   };
 
   // Get tasks for a specific column
-  const getColumnTasks = (status: string) => {
-    const query = columnTaskQueries[status];
-    if (!query || !query.data) return [];
-    
-    const columnTasks: TaskProps[] = [];
-    query.data.pages.forEach((page: any) => {
-      columnTasks.push(...page.tasks);
-    });
-    return columnTasks;
+  const getColumnTasks = (status: ColumnStatus) => {
+    return columnTasksMap[status];
   };
 
   // Load more tasks for a column
-  const handleLoadMore = (status: string) => {
+  const handleLoadMore = (status: ColumnStatus) => {
     const query = columnTaskQueries[status];
     if (query?.hasNextPage && !query.isFetchingNextPage) {
       query.fetchNextPage();
