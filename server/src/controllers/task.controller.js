@@ -95,7 +95,7 @@ const createTask = async (req, res) => {
 const getTasksByBoard = async (req, res) => {
   try {
     const { boardId } = req.params;
-    const { status, limit = 10, cursor } = req.query;
+    const { status, limit = 10, cursor, cursorOrder: cursorOrderParam, cursorId: cursorIdParam } = req.query;
 
     const board = await Board.findById(boardId);
     if (!board) {
@@ -127,9 +127,50 @@ const getTasksByBoard = async (req, res) => {
       }
     }
 
-    // Cursor-based pagination: fetch tasks after the cursor
-    if (cursor) {
-      query._id = { $gt: cursor };
+    // Cursor-based pagination using a compound cursor: (order, _id)
+    let cursorOrder =
+      cursorOrderParam !== undefined && cursorOrderParam !== '' ? Number(cursorOrderParam) : undefined;
+    let resolvedCursorId = cursorIdParam || undefined;
+
+    // Accept encoded cursor form: "<order>:<id>" for backward-compatible client pagination.
+    if (cursor && !resolvedCursorId && (cursorOrder === undefined || Number.isNaN(cursorOrder))) {
+      const encodedCursor = String(cursor);
+      const separatorIndex = encodedCursor.indexOf(':');
+
+      if (separatorIndex > -1) {
+        const derivedOrder = Number(encodedCursor.slice(0, separatorIndex));
+        const derivedId = encodedCursor.slice(separatorIndex + 1);
+
+        if (!Number.isNaN(derivedOrder)) {
+          cursorOrder = derivedOrder;
+          resolvedCursorId = derivedId;
+        }
+      }
+    }
+
+    // Support legacy cursor (id only) by deriving order from the cursor task.
+    if (cursor && !resolvedCursorId) {
+      resolvedCursorId = String(cursor);
+    }
+
+    if (resolvedCursorId && (cursorOrder === undefined || Number.isNaN(cursorOrder))) {
+      if (!mongoose.Types.ObjectId.isValid(resolvedCursorId)) {
+        return res.status(400).json({ message: 'Invalid cursorId' });
+      }
+
+      const cursorTask = await Task.findOne({ _id: resolvedCursorId, boardId }).select('order');
+      if (!cursorTask) {
+        return res.status(400).json({ message: 'Invalid cursor' });
+      }
+      cursorOrder = cursorTask.order;
+    }
+
+    if (resolvedCursorId && cursorOrder !== undefined && !Number.isNaN(cursorOrder)) {
+      const cursorObjectId = new mongoose.Types.ObjectId(resolvedCursorId);
+      query.$or = [
+        { order: { $lt: cursorOrder } },
+        { order: cursorOrder, _id: { $lt: cursorObjectId } },
+      ];
     }
 
     // Parse limit to number
@@ -141,15 +182,18 @@ const getTasksByBoard = async (req, res) => {
       .populate('assignedTo', 'fullName username avatar')
       .populate('createdBy', 'fullName username avatar')
       .populate('tags')
-      .sort({ _id: 1 })
+      .sort({ order: 1, _id: 1 })
       .limit(fetchLimit);
 
     // Determine if there are more results
     const hasMore = tasks.length > limitNum;
     const resultTasks = hasMore ? tasks.slice(0, limitNum) : tasks;
 
-    // Get next cursor from the last task
-    const nextCursor = resultTasks.length > 0 ? resultTasks[resultTasks.length - 1]._id.toString() : null;
+    // Encode next cursor as "<order>:<id>" so the next request can reuse both cursor fields.
+    const nextCursor =
+      resultTasks.length > 0
+        ? `${resultTasks[resultTasks.length - 1].order}:${resultTasks[resultTasks.length - 1]._id.toString()}`
+        : null;
 
     return res.status(200).json({
       message: 'Tasks fetched successfully',
