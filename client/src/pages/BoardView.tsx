@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useTasks } from '../hooks/useTasks';
+import { useTasks, useTasksByStatus } from '../hooks/useTasks';
 import { useBoards } from '../hooks/useBoards';
 import { TaskColumn } from '../components/TaskColumn';
 import { DragDropContext } from '@hello-pangea/dnd';
@@ -10,6 +10,21 @@ import type { TaskProps } from '../components/TaskModal';
 import { Button } from '../components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
+// Column type definition
+type ColumnStatus = 'todo' | 'in-progress' | 'review' | 'done';
+
+interface Column {
+  title: string;
+  status: ColumnStatus;
+}
+
+const columns: Column[] = [
+  { title: 'To Do', status: 'todo' },
+  { title: 'In Progress', status: 'in-progress' },
+  { title: 'Review', status: 'review' },
+  { title: 'Done', status: 'done' },
+];
+
 export default function BoardView() {
   const { boardId } = useParams<{ boardId: string }>();
   const navigate = useNavigate();
@@ -18,12 +33,9 @@ export default function BoardView() {
   const [tasks, setTasks] = useState<TaskProps[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskProps | undefined>(undefined);
-  const [newTaskStatus, setNewTaskStatus] = useState<'todo' | 'in-progress' | 'review' | 'done'>(
-    'todo'
-  );
+  const [newTaskStatus, setNewTaskStatus] = useState<ColumnStatus>('todo');
 
   const {
-    tasks: queryTasks,
     tags: availableTags,
     isLoadingTags,
     createTask,
@@ -32,11 +44,41 @@ export default function BoardView() {
     createTag: createTagQuery,
     reorderTasks: reorderTasksQuery,
   } = useTasks(boardId);
+
   const { board: queryBoard, isLoadingBoard } = useBoards(undefined, boardId);
 
+  // Create separate infinite queries for each column - hooks must be at top level
+  const todoTasksQuery = useTasksByStatus(boardId, 'todo', 10);
+  const inProgressTasksQuery = useTasksByStatus(boardId, 'in-progress', 10);
+  const reviewTasksQuery = useTasksByStatus(boardId, 'review', 10);
+  const doneTasksQuery = useTasksByStatus(boardId, 'done', 10);
+
+  // Store queries in a map for easy access
+  const columnTaskQueries = useMemo(() => ({
+    'todo': todoTasksQuery,
+    'in-progress': inProgressTasksQuery,
+    'review': reviewTasksQuery,
+    'done': doneTasksQuery,
+  }), [todoTasksQuery, inProgressTasksQuery, reviewTasksQuery, doneTasksQuery]);
+
+  // Combine tasks from all columns
   useEffect(() => {
-    setTasks(queryTasks as any[]);
-  }, [queryTasks]);
+    const allTasks: TaskProps[] = [];
+    columns.forEach((col) => {
+      const query = columnTaskQueries[col.status];
+      if (query && query.data) {
+        query.data.pages.forEach((page: any) => {
+          allTasks.push(...page.tasks);
+        });
+      }
+    });
+    setTasks(allTasks);
+  }, [columnTaskQueries]);
+
+  // Check if any column is loading
+  const isLoadingTasks = columns.some(
+    (col) => columnTaskQueries[col.status]?.isLoading
+  );
 
   useEffect(() => {
     if (queryBoard) {
@@ -44,7 +86,7 @@ export default function BoardView() {
     }
   }, [queryBoard]);
 
-  if (isLoadingBoard || isLoadingTags) {
+  if (isLoadingBoard || isLoadingTags || isLoadingTasks) {
     return <div className="p-8">Loading board...</div>;
   }
 
@@ -54,14 +96,7 @@ export default function BoardView() {
 
   const hasWriteAccess = board.userRole === 'write' || board.userRole === 'owner';
 
-  const columns = [
-    { title: 'To Do', status: 'todo' as const },
-    { title: 'In Progress', status: 'in-progress' as const },
-    { title: 'Review', status: 'review' as const },
-    { title: 'Done', status: 'done' as const },
-  ];
-
-  const handleOpenCreateModal = (status: 'todo' | 'in-progress' | 'review' | 'done' = 'todo') => {
+  const handleOpenCreateModal = (status: ColumnStatus = 'todo') => {
     if (!hasWriteAccess) return;
     setSelectedTask(undefined);
     setNewTaskStatus(status);
@@ -180,6 +215,26 @@ export default function BoardView() {
     }
   };
 
+  // Get tasks for a specific column
+  const getColumnTasks = (status: string) => {
+    const query = columnTaskQueries[status];
+    if (!query || !query.data) return [];
+    
+    const columnTasks: TaskProps[] = [];
+    query.data.pages.forEach((page: any) => {
+      columnTasks.push(...page.tasks);
+    });
+    return columnTasks;
+  };
+
+  // Load more tasks for a column
+  const handleLoadMore = (status: string) => {
+    const query = columnTaskQueries[status];
+    if (query?.hasNextPage && !query.isFetchingNextPage) {
+      query.fetchNextPage();
+    }
+  };
+
   return (
     <div className="container mx-auto p-6 md:p-8 max-w-full font-sans flex flex-col h-[calc(100vh-64px)] overflow-hidden">
       {/* Header */}
@@ -222,10 +277,13 @@ export default function BoardView() {
               <TaskColumn
                 title={col.title}
                 status={col.status}
-                tasks={tasks.filter((t) => t.status === col.status)}
+                tasks={getColumnTasks(col.status)}
                 onTaskClick={handleOpenEditModal}
                 onAddTask={handleOpenCreateModal}
                 hasWriteAccess={hasWriteAccess}
+                onLoadMore={() => handleLoadMore(col.status)}
+                hasMore={columnTaskQueries[col.status]?.hasNextPage ?? false}
+                isLoadingMore={columnTaskQueries[col.status]?.isFetchingNextPage ?? false}
               />
             </div>
           ))}

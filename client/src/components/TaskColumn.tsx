@@ -1,6 +1,6 @@
 import type { TaskProps } from './TaskModal';
 import { TaskCard } from './TaskCard';
-import { Plus } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 import { Droppable } from '@hello-pangea/dnd';
 
 interface TaskColumnProps {
@@ -10,6 +10,9 @@ interface TaskColumnProps {
   onTaskClick: (task: TaskProps) => void;
   onAddTask: (status: 'todo' | 'in-progress' | 'review' | 'done') => void;
   hasWriteAccess: boolean;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
 }
 
 export function TaskColumn({
@@ -19,6 +22,9 @@ export function TaskColumn({
   onTaskClick,
   onAddTask,
   hasWriteAccess,
+  onLoadMore,
+  hasMore,
+  isLoadingMore,
 }: TaskColumnProps) {
   return (
     <div className="bg-gray-50/50 dark:bg-zinc-900/50 rounded-2xl p-4 flex flex-col h-full border border-gray-100 dark:border-zinc-800">
@@ -50,6 +56,24 @@ export function TaskColumn({
           )}
         </Droppable>
       </div>
+
+      {/* Load More Button for Infinite Scroll */}
+      {onLoadMore && hasMore && (
+        <button
+          onClick={onLoadMore}
+          disabled={isLoadingMore}
+          className="mt-2 w-full flex items-center justify-center gap-2 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-xl transition-colors disabled:opacity-50"
+        >
+          {isLoadingMore ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Loading...
+            </>
+          ) : (
+            'Load more'
+          )}
+        </button>
+      )}
 
       {hasWriteAccess && (
         <button

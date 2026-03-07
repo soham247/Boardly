@@ -95,6 +95,7 @@ const createTask = async (req, res) => {
 const getTasksByBoard = async (req, res) => {
   try {
     const { boardId } = req.params;
+    const { status, limit = 10, cursor } = req.query;
 
     const board = await Board.findById(boardId);
     if (!board) {
@@ -115,15 +116,46 @@ const getTasksByBoard = async (req, res) => {
       }
     }
 
-    const tasks = await Task.find({ boardId })
+    // Build query with filters
+    const query = { boardId };
+
+    // Filter by status if provided
+    if (status) {
+      const validStatuses = ['todo', 'in-progress', 'review', 'done'];
+      if (validStatuses.includes(status)) {
+        query.status = status;
+      }
+    }
+
+    // Cursor-based pagination: fetch tasks after the cursor
+    if (cursor) {
+      query._id = { $gt: cursor };
+    }
+
+    // Parse limit to number
+    const limitNum = parseInt(limit, 10) || 10;
+    // Fetch one extra to determine if there are more results
+    const fetchLimit = limitNum + 1;
+
+    const tasks = await Task.find(query)
       .populate('assignedTo', 'fullName username avatar')
       .populate('createdBy', 'fullName username avatar')
       .populate('tags')
-      .sort({ updatedAt: -1 });
+      .sort({ _id: 1 })
+      .limit(fetchLimit);
+
+    // Determine if there are more results
+    const hasMore = tasks.length > limitNum;
+    const resultTasks = hasMore ? tasks.slice(0, limitNum) : tasks;
+
+    // Get next cursor from the last task
+    const nextCursor = resultTasks.length > 0 ? resultTasks[resultTasks.length - 1]._id.toString() : null;
 
     return res.status(200).json({
       message: 'Tasks fetched successfully',
-      tasks,
+      tasks: resultTasks,
+      nextCursor,
+      hasMore,
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
