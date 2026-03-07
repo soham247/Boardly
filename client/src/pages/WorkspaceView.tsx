@@ -34,7 +34,17 @@ export default function WorkspaceView() {
   const [sortBy, setSortBy] = useState<'updatedDesc' | 'updatedAsc' | 'nameAsc'>('updatedDesc');
 
   useEffect(() => {
-    setBoards(queryBoards as unknown as BoardProps[]);
+    const incoming = queryBoards as unknown as BoardProps[];
+    if (incoming === boards) return;
+
+    // Shallow-compare by id + updatedAt to avoid unnecessary re-renders
+    const isSame =
+      incoming.length === boards.length &&
+      incoming.every((b, i) => b._id === boards[i]._id && b.updatedAt === boards[i].updatedAt);
+
+    if (!isSame) {
+      setBoards(incoming);
+    }
   }, [queryBoards]);
 
   useEffect(() => {
