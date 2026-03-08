@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import ReactMarkdown from 'react-markdown';
+import rehypeSanitize from 'rehype-sanitize';
 
 export interface TagProps {
   _id: string;
@@ -184,7 +185,7 @@ export function TaskModal({
                   Preview
                 </div>
                 <div className="flex-1 overflow-y-auto p-3 text-sm bg-white dark:bg-zinc-950 prose prose-sm dark:prose-invert max-w-none">
-                  <ReactMarkdown>{formData.description || 'Preview will appear here...'}</ReactMarkdown>
+                  <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{formData.description || 'Preview will appear here...'}</ReactMarkdown>
                 </div>
               </div>
             </div>
