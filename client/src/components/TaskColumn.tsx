@@ -78,16 +78,6 @@ export function TaskColumn({
           )}
         </button>
       )}
-
-      {hasWriteAccess && (
-        <button
-          onClick={() => onAddTask(status)}
-          className="mt-2 w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-xl transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Add task
-        </button>
-      )}
     </div>
   );
 }
