@@ -8,7 +8,7 @@ import type { DropResult } from '@hello-pangea/dnd';
 import { TaskModal } from '../components/TaskModal';
 import type { TaskProps } from '../components/TaskModal';
 import { Button } from '../components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 
 // Column type definition
 type ColumnStatus = 'todo' | 'in-progress' | 'review' | 'done';
@@ -307,6 +307,15 @@ export default function BoardView() {
             </div>
           </div>
         </div>
+        {hasWriteAccess && (
+          <Button
+            onClick={() => handleOpenCreateModal('todo')}
+            className="gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Add Task
+          </Button>
+        )}
       </div>
 
       {/* Kanban Board */}
