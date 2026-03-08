@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import ReactMarkdown from 'react-markdown';
 
 export interface TagProps {
   _id: string;
@@ -166,17 +167,27 @@ export function TaskModal({
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Description
+              Description (Markdown)
             </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Add details..."
-              rows={3}
-              disabled={isReadOnly}
-              className="flex w-full rounded-md border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-gray-100 px-3 py-2 text-sm resize-none disabled:cursor-not-allowed disabled:opacity-50"
-            />
+            <div className="grid grid-cols-2 gap-2">
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="Write markdown here... **bold**, *italic*, # heading, - list, [link](url), ```code```"
+                rows={5}
+                disabled={isReadOnly}
+                className="flex w-full rounded-md border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-gray-100 px-3 py-2 text-sm resize-none disabled:cursor-not-allowed disabled:opacity-50"
+              />
+              <div className="border border-gray-200 dark:border-zinc-800 rounded-md overflow-hidden flex flex-col">
+                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-zinc-900 px-3 py-2 border-b border-gray-200 dark:border-zinc-800">
+                  Preview
+                </div>
+                <div className="flex-1 overflow-y-auto p-3 text-sm bg-white dark:bg-zinc-950 prose prose-sm dark:prose-invert max-w-none">
+                  <ReactMarkdown>{formData.description || 'Preview will appear here...'}</ReactMarkdown>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
