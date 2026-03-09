@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import ReactMarkdown from 'react-markdown';
+import rehypeSanitize from 'rehype-sanitize';
 
 export interface TagProps {
   _id: string;
@@ -165,18 +167,45 @@ export function TaskModal({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Add details..."
-              rows={3}
-              disabled={isReadOnly}
-              className="flex w-full rounded-md border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-gray-100 px-3 py-2 text-sm resize-none disabled:cursor-not-allowed disabled:opacity-50"
-            />
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                Description
+              </label>
+              {!isReadOnly && (
+                <span className="text-xs text-gray-500 dark:text-gray-400">Markdown supported</span>
+              )}
+            </div>
+            {isReadOnly && formData.description ? (
+              <div className="border border-gray-200 dark:border-zinc-800 rounded-md p-4 bg-gray-50 dark:bg-zinc-900/50 min-h-[200px]">
+                <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <ReactMarkdown rehypePlugins={[rehypeSanitize]}>
+                    {formData.description}
+                  </ReactMarkdown>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 border border-gray-200 dark:border-zinc-800 rounded-md overflow-hidden">
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  placeholder="**bold**, *italic*, # heading, - list, [link](url), ```code```"
+                  rows={6}
+                  disabled={isReadOnly}
+                  className="flex w-full bg-white dark:bg-zinc-900 dark:text-gray-100 px-3 py-3 text-sm resize-none disabled:cursor-not-allowed disabled:opacity-50 border-0 focus:outline-none"
+                />
+                <div className="bg-white dark:bg-zinc-950 flex flex-col border-l border-gray-200 dark:border-zinc-800">
+                  <div className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-zinc-900 px-3 py-2 border-b border-gray-200 dark:border-zinc-800">
+                    Preview
+                  </div>
+                  <div className="flex-1 overflow-y-auto px-3 py-3 text-sm prose prose-sm dark:prose-invert max-w-none">
+                    <ReactMarkdown rehypePlugins={[rehypeSanitize]}>
+                      {formData.description || 'Preview will appear here...'}
+                    </ReactMarkdown>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">

@@ -29,5 +29,8 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "^3.8.1"
+  },
+  "dependencies": {
+    "@uiw/react-md-editor": "^4.0.11"
   }
 }
