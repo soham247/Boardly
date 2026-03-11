@@ -8,7 +8,7 @@ import type { DropResult } from '@hello-pangea/dnd';
 import { TaskModal } from '../components/TaskModal';
 import type { TaskProps } from '../components/TaskModal';
 import { Button } from '../components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 
 export default function BoardView() {
   const { boardId } = useParams<{ boardId: string }>();
@@ -31,7 +31,6 @@ export default function BoardView() {
     deleteTask,
     createTag: createTagQuery,
     reorderTasks: reorderTasksQuery,
-    isReordering,
   } = useTasks(boardId);
   const { board: queryBoard, isLoadingBoard } = useBoards(undefined, boardId);
 
