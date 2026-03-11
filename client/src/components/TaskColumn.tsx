@@ -1,6 +1,6 @@
 import type { TaskProps } from './TaskModal';
 import { TaskCard } from './TaskCard';
-import { Plus, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Droppable } from '@hello-pangea/dnd';
 
 interface TaskColumnProps {
@@ -8,8 +8,6 @@ interface TaskColumnProps {
   status: 'todo' | 'in-progress' | 'review' | 'done';
   tasks: TaskProps[];
   onTaskClick: (task: TaskProps) => void;
-  onAddTask: (status: 'todo' | 'in-progress' | 'review' | 'done') => void;
-  hasWriteAccess: boolean;
   onLoadMore?: () => void;
   hasMore?: boolean;
   isLoadingMore?: boolean;
@@ -20,8 +18,6 @@ export function TaskColumn({
   status,
   tasks,
   onTaskClick,
-  onAddTask,
-  hasWriteAccess,
   onLoadMore,
   hasMore,
   isLoadingMore,
@@ -37,25 +33,29 @@ export function TaskColumn({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-2 min-h-[50px]">
-        <Droppable droppableId={status}>
-          {(provided, snapshot) => (
-            <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              className={`min-h-[100px] h-full transition-colors rounded-xl ${snapshot.isDraggingOver ? 'bg-gray-100/50 dark:bg-zinc-800/50' : ''
-                }`}
-            >
-              {tasks
-                .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
-                .map((task, index) => (
-                  <TaskCard key={task._id} task={task} index={index} onClick={() => onTaskClick(task)} />
-                ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </div>
+      <Droppable droppableId={status}>
+        {(provided, snapshot) => (
+          <div
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            className={`flex-1 overflow-y-auto no-scrollbar pb-2 min-h-12.5 transition-colors rounded-xl ${
+              snapshot.isDraggingOver ? 'bg-gray-100/50 dark:bg-zinc-800/50' : ''
+            }`}
+          >
+            {tasks
+              .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+              .map((task, index) => (
+                <TaskCard
+                  key={task._id}
+                  task={task}
+                  index={index}
+                  onClick={() => onTaskClick(task)}
+                />
+              ))}
+            {provided.placeholder}
+          </div>
+        )}
+      </Droppable>
 
       {/* Load More Button for Infinite Scroll */}
       {onLoadMore && hasMore && (
@@ -72,16 +72,6 @@ export function TaskColumn({
           ) : (
             'Load more'
           )}
-        </button>
-      )}
-
-      {hasWriteAccess && (
-        <button
-          onClick={() => onAddTask(status)}
-          className="mt-2 w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-xl transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Add task
         </button>
       )}
     </div>
