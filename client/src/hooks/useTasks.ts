@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/api';
 import { useAuthStore } from '../store/auth-store';
 
@@ -15,58 +15,10 @@ export interface Task {
   tags?: string[];
 }
 
-// Interface for paginated task response
-export interface PaginatedTasksResponse {
-  message: string;
-  tasks: Task[];
-  nextCursor: string | null;
-  hasMore: boolean;
-}
-
-// Separate hook for fetching tasks by status with pagination
-export const useTasksByStatus = (
-  boardId?: string,
-  status?: 'todo' | 'in-progress' | 'review' | 'done',
-  limit = 10
-) => {
-  const { isAuthenticated } = useAuthStore();
-
-  return useInfiniteQuery<PaginatedTasksResponse>({
-    queryKey: ['tasks', boardId, status, limit],
-    queryFn: async ({ pageParam }) => {
-      if (!boardId || !status) {
-        return { message: '', tasks: [], nextCursor: null, hasMore: false };
-      }
-      const params = new URLSearchParams();
-      params.append('status', status);
-      params.append('limit', limit.toString());
-      if (pageParam) {
-        params.append('cursor', pageParam as string);
-      }
-      const res = await api.get(`/tasks/board/${boardId}?${params.toString()}`);
-      return {
-        message: res.data.message,
-        tasks: res.data.tasks ?? [],
-        nextCursor: res.data.nextCursor ?? null,
-        hasMore: res.data.hasMore ?? false,
-      };
-    },
-    initialPageParam: null as string | null,
-    getNextPageParam: (lastPage) => {
-      if (lastPage.hasMore && lastPage.nextCursor) {
-        return lastPage.nextCursor;
-      }
-      return undefined;
-    },
-    enabled: isAuthenticated && !!boardId && !!status,
-  });
-};
-
 export const useTasks = (boardId?: string) => {
   const { isAuthenticated } = useAuthStore();
   const queryClient = useQueryClient();
 
-  // Original all-tasks query (backward compatible)
   const {
     data: tasks = [],
     isLoading,
