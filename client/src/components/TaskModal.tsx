@@ -55,10 +55,20 @@ interface Member {
   role: string;
 }
 
+export interface TaskFormData {
+  title: string;
+  description: string;
+  status: 'todo' | 'in-progress' | 'review' | 'done';
+  priority: 'low' | 'medium' | 'high';
+  assignedTo?: string;
+  dueDate?: string;
+  tags: string[];
+}
+
 interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (taskData: any) => Promise<void>;
+  onSave: (taskData: TaskFormData) => Promise<void>;
   onDelete?: () => void;
   task?: TaskProps;
   defaultStatus?: 'todo' | 'in-progress' | 'review' | 'done';

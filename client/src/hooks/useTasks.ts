@@ -2,17 +2,43 @@ import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tansta
 import api from '../lib/api';
 import { useAuthStore } from '../store/auth-store';
 
+export interface UserInfo {
+  _id: string;
+  fullName: string;
+  username: string;
+  avatar?: string;
+}
+
+export interface TagInfo {
+  _id: string;
+  name: string;
+  color: string;
+  boardId?: string | null;
+}
+
 export interface Task {
   _id: string;
   title: string;
   description?: string;
   boardId: string;
-  assignedTo?: string[];
+  assignedTo?: UserInfo;
   status: 'todo' | 'in-progress' | 'review' | 'done';
-  priority?: string;
+  priority: 'low' | 'medium' | 'high';
   dueDate?: string;
   order?: number;
-  tags?: string[];
+  tags?: TagInfo[];
+  createdBy: UserInfo;
+}
+
+// DTO for creating/updating tasks (what we send to the API)
+export interface TaskUpdateData {
+  title?: string;
+  description?: string;
+  status?: 'todo' | 'in-progress' | 'review' | 'done';
+  priority?: 'low' | 'medium' | 'high';
+  assignedTo?: string; // User ID
+  dueDate?: string;
+  tags?: string[]; // Tag IDs
 }
 
 // Interface for paginated task response
@@ -96,7 +122,7 @@ export const useTasks = (boardId?: string) => {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: Partial<Task> & { boardId: string }) => {
+    mutationFn: async (data: TaskUpdateData & { boardId: string }) => {
       const res = await api.post('/tasks', data);
       return res.data;
     },
@@ -106,7 +132,7 @@ export const useTasks = (boardId?: string) => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ taskId, data }: { taskId: string; data: Partial<Task> }) => {
+    mutationFn: async ({ taskId, data }: { taskId: string; data: TaskUpdateData }) => {
       const res = await api.patch(`/tasks/${taskId}`, data);
       return res.data;
     },
