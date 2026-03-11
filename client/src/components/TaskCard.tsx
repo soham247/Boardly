@@ -16,6 +16,7 @@ const priorityColors = {
 
 export function TaskCard({ task, index, onClick }: TaskCardProps) {
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
+  const primaryAssignee = task.assignedTo?.[0];
 
   return (
     <Draggable draggableId={task._id} index={index}>
@@ -25,20 +26,29 @@ export function TaskCard({ task, index, onClick }: TaskCardProps) {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           onClick={onClick}
-          className={`bg-white dark:bg-zinc-950 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800 transition-shadow mb-3 group ${snapshot.isDragging ? 'shadow-lg dark:shadow-[0_8px_24px_rgba(0,0,0,0.8)] opacity-90' : 'hover:shadow-md dark:hover:shadow-[0_4px_12px_rgba(0,0,0,0.5)] cursor-pointer'
-            }`}
+          className={`bg-white dark:bg-zinc-950 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800 transition-shadow mb-3 group ${
+            snapshot.isDragging
+              ? 'shadow-lg dark:shadow-[0_8px_24px_rgba(0,0,0,0.8)] opacity-90'
+              : 'hover:shadow-md dark:hover:shadow-[0_4px_12px_rgba(0,0,0,0.5)] cursor-pointer'
+          }`}
         >
           <div className="flex justify-between items-start mb-2">
             <div className="flex flex-wrap gap-1.5 flex-1 pr-2">
-              {task.tags && task.tags.length > 0 && task.tags.map((tag) => (
-                <span
-                  key={tag._id}
-                  className="text-[10px] font-bold tracking-wider px-1.5 py-0.5 rounded-md"
-                  style={{ backgroundColor: tag.color + '20', color: tag.color, border: `1px solid ${tag.color}40` }}
-                >
-                  {tag.name}
-                </span>
-              ))}
+              {task.tags &&
+                task.tags.length > 0 &&
+                task.tags.map((tag) => (
+                  <span
+                    key={tag._id}
+                    className="text-[10px] font-bold tracking-wider px-1.5 py-0.5 rounded-md"
+                    style={{
+                      backgroundColor: tag.color + '20',
+                      color: tag.color,
+                      border: `1px solid ${tag.color}40`,
+                    }}
+                  >
+                    {tag.name}
+                  </span>
+                ))}
             </div>
             <span
               className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${priorityColors[task.priority]}`}
@@ -73,20 +83,20 @@ export function TaskCard({ task, index, onClick }: TaskCardProps) {
               )}
             </div>
 
-            {task.assignedTo ? (
+            {primaryAssignee ? (
               <div
                 className="w-6 h-6 rounded-full bg-gray-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-zinc-800 ml-auto"
-                title={task.assignedTo.fullName || task.assignedTo.username}
+                title={primaryAssignee.fullName || primaryAssignee.username}
               >
-                {task.assignedTo.avatar ? (
+                {primaryAssignee.avatar ? (
                   <img
-                    src={task.assignedTo.avatar}
+                    src={primaryAssignee.avatar}
                     alt="avatar"
                     className="w-full h-full object-cover"
                   />
                 ) : (
                   <span className="text-[10px] text-gray-500 font-medium">
-                    {(task.assignedTo.fullName || task.assignedTo.username || '?')
+                    {(primaryAssignee.fullName || primaryAssignee.username || '?')
                       .charAt(0)
                       .toUpperCase()}
                   </span>

@@ -66,23 +66,31 @@ const createTask = async (req, res) => {
         .json({ message: "You don't have write permission to create tasks on this board" });
     }
 
-    // Verify assignedTo is a board member if provided
-    if (assignedTo) {
-      const isMember =
-        board.members.some((m) => m.userId.toString() === assignedTo) ||
-        board.createdBy.toString() === assignedTo;
-      if (!isMember) {
-        return res.status(400).json({ message: 'Assigned user is not a member of this board' });
+    // Verify assignedTo contains only board members if provided
+    let validAssignees = [];
+    if (assignedTo && Array.isArray(assignedTo) && assignedTo.length > 0) {
+      const invalidAssignees = assignedTo.filter((assigneeId) => {
+        const isMember =
+          board.members.some((m) => m.userId.toString() === assigneeId.toString()) ||
+          board.createdBy.toString() === assigneeId.toString();
+        return !isMember;
+      });
+
+      if (invalidAssignees.length > 0) {
+        return res
+          .status(400)
+          .json({ message: 'One or more assigned users are not members of this board' });
       }
+      validAssignees = assignedTo;
     }
 
     let validTags = [];
     if (Array.isArray(tags) && tags.length > 0) {
       const dbTags = await Tag.find({
         _id: { $in: tags },
-        $or: [{ boardId: null }, { boardId: new mongoose.Types.ObjectId(boardId) }]
+        $or: [{ boardId: null }, { boardId: new mongoose.Types.ObjectId(boardId) }],
       });
-      validTags = dbTags.map(tag => tag._id.toString());
+      validTags = dbTags.map((tag) => tag._id.toString());
     }
 
     const task = await Task.create({
@@ -90,7 +98,7 @@ const createTask = async (req, res) => {
       description,
       boardId,
       createdBy: req.user._id,
-      assignedTo,
+      assignedTo: validAssignees,
       status: status || 'todo',
       priority: priority || 'low',
       dueDate,
@@ -113,7 +121,13 @@ const createTask = async (req, res) => {
 const getTasksByBoard = async (req, res) => {
   try {
     const { boardId } = req.params;
-    const { status, limit = 10, cursor, cursorOrder: cursorOrderParam, cursorId: cursorIdParam } = req.query;
+    const {
+      status,
+      limit = 10,
+      cursor,
+      cursorOrder: cursorOrderParam,
+      cursorId: cursorIdParam,
+    } = req.query;
 
     const board = await Board.findById(boardId);
     if (!board) {
@@ -139,9 +153,23 @@ const getTasksByBoard = async (req, res) => {
       }
     }
 
+    // Build query with filters
+    const query = { boardId };
+
+    // Filter by status if provided
+    if (status) {
+      const validStatuses = ['todo', 'in-progress', 'review', 'done'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: 'Invalid status parameter' });
+      }
+      query.status = status;
+    }
+
     // Cursor-based pagination using a compound cursor: (order, _id)
     let cursorOrder =
-      cursorOrderParam !== undefined && cursorOrderParam !== '' ? Number(cursorOrderParam) : undefined;
+      cursorOrderParam !== undefined && cursorOrderParam !== ''
+        ? Number(cursorOrderParam)
+        : undefined;
     let resolvedCursorId = cursorIdParam || undefined;
 
     // Accept encoded cursor form: "<order>:<id>" for backward-compatible client pagination.
@@ -170,7 +198,10 @@ const getTasksByBoard = async (req, res) => {
         return res.status(400).json({ message: 'Invalid cursorId' });
       }
 
-      const cursorTask = await Task.findOne({ _id: resolvedCursorId, boardId }).select('order');
+      const cursorQuery = { _id: resolvedCursorId, boardId };
+      if (status) cursorQuery.status = status;
+
+      const cursorTask = await Task.findOne(cursorQuery).select('order');
       if (!cursorTask) {
         return res.status(400).json({ message: 'Invalid cursor' });
       }
@@ -178,15 +209,20 @@ const getTasksByBoard = async (req, res) => {
     }
 
     if (resolvedCursorId && cursorOrder !== undefined && !Number.isNaN(cursorOrder)) {
+      if (!mongoose.Types.ObjectId.isValid(resolvedCursorId)) {
+        return res.status(400).json({ message: 'Invalid cursorId' });
+      }
       const cursorObjectId = new mongoose.Types.ObjectId(resolvedCursorId);
       query.$or = [
-        { order: { $lt: cursorOrder } },
-        { order: cursorOrder, _id: { $lt: cursorObjectId } },
+        { order: { $gt: cursorOrder } },
+        { order: cursorOrder, _id: { $gt: cursorObjectId } },
       ];
     }
 
-    // Parse limit to number
-    const limitNum = parseInt(limit, 10) || 10;
+    // Parse limit to number and constrain it
+    let limitNum = parseInt(limit, 10);
+    if (isNaN(limitNum) || limitNum <= 0) limitNum = 10;
+    if (limitNum > 100) limitNum = 100;
     // Fetch one extra to determine if there are more results
     const fetchLimit = limitNum + 1;
 
@@ -241,19 +277,29 @@ const updateTask = async (req, res) => {
         .json({ message: "You don't have write permission to update tasks on this board" });
     }
 
-    // Verify assignedTo is a board member if provided/changed
-    if (assignedTo && assignedTo !== task.assignedTo?.toString()) {
-      const isMember =
-        board.members.some((m) => m.userId.toString() === assignedTo) ||
-        board.createdBy.toString() === assignedTo;
-      if (!isMember) {
-        return res.status(400).json({ message: 'Assigned user is not a member of this board' });
+    // Verify assignedTo contains only board members if provided/changed
+    if (assignedTo !== undefined) {
+      if (Array.isArray(assignedTo)) {
+        const invalidAssignees = assignedTo.filter((assigneeId) => {
+          const isMember =
+            board.members.some((m) => m.userId.toString() === assigneeId.toString()) ||
+            board.createdBy.toString() === assigneeId.toString();
+          return !isMember;
+        });
+
+        if (invalidAssignees.length > 0) {
+          return res
+            .status(400)
+            .json({ message: 'One or more assigned users are not members of this board' });
+        }
+        task.assignedTo = assignedTo;
+      } else {
+        task.assignedTo = [];
       }
     }
 
     if (title !== undefined) task.title = title;
     if (description !== undefined) task.description = description;
-    if (assignedTo !== undefined) task.assignedTo = assignedTo;
     if (status !== undefined) task.status = status;
     if (priority !== undefined) task.priority = priority;
     if (dueDate !== undefined) task.dueDate = dueDate;
@@ -261,9 +307,9 @@ const updateTask = async (req, res) => {
       if (Array.isArray(tags) && tags.length > 0) {
         const dbTags = await Tag.find({
           _id: { $in: tags },
-          $or: [{ boardId: null }, { boardId: new mongoose.Types.ObjectId(task.boardId) }]
+          $or: [{ boardId: null }, { boardId: new mongoose.Types.ObjectId(task.boardId) }],
         });
-        task.tags = dbTags.map(t => t._id.toString());
+        task.tags = dbTags.map((t) => t._id.toString());
       } else {
         task.tags = [];
       }
@@ -358,21 +404,23 @@ const reorderTasks = async (req, res) => {
       const uniqueIds = [...new Set(taskIds)];
       const matchedCount = await Task.countDocuments({ _id: { $in: uniqueIds }, boardId });
       if (matchedCount !== uniqueIds.length) {
-        return res.status(422).json({ message: 'One or more invalid task IDs or tasks do not belong to this board' });
+        return res
+          .status(422)
+          .json({ message: 'One or more invalid task IDs or tasks do not belong to this board' });
       }
     }
 
     // Prepare bulk write operations
-    const bulkOps = tasks.map(task => ({
+    const bulkOps = tasks.map((task) => ({
       updateOne: {
         filter: { _id: task._id, boardId },
         update: {
           $set: {
             status: task.status,
-            order: task.order
-          }
-        }
-      }
+            order: task.order,
+          },
+        },
+      },
     }));
 
     if (bulkOps.length > 0) {

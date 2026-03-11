@@ -21,10 +21,12 @@ const taskSchema = new Schema(
       ref: 'User',
       required: true,
     },
-    assignedTo: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-    },
+    assignedTo: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     status: {
       type: String,
       enum: ['todo', 'in-progress', 'review', 'done'],
