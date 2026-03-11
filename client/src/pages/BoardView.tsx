@@ -1,17 +1,30 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useTasks, useTasksByStatus } from '../hooks/useTasks';
-import { useBoards } from '../hooks/useBoards';
+import { useTasks, useTasksByStatus, type PaginatedTasksResponse, type TaskUpdateData } from '../hooks/useTasks';
+import { useBoards, type Board } from '../hooks/useBoards';
 import { TaskColumn } from '../components/TaskColumn';
 import { DragDropContext } from '@hello-pangea/dnd';
-import type { DropResult } from '@hello-pangea/dnd';
-import { TaskModal } from '../components/TaskModal';
+import type { DropResult, DraggableLocation } from '@hello-pangea/dnd';
+import { TaskModal, type TaskFormData } from '../components/TaskModal';
 import type { TaskProps } from '../components/TaskModal';
 import { Button } from '../components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
 // Column type definition
 type ColumnStatus = 'todo' | 'in-progress' | 'review' | 'done';
+
+// Type for task update items in reorder operation
+interface TaskUpdateItem {
+  _id: string;
+  status: ColumnStatus;
+  order: number;
+}
+
+// Type for reorder result
+interface ReorderResult {
+  computedTasks: TaskProps[];
+  tasksToUpdateItems: TaskUpdateItem[];
+}
 
 interface Column {
   title: string;
@@ -29,7 +42,7 @@ export default function BoardView() {
   const { boardId } = useParams<{ boardId: string }>();
   const navigate = useNavigate();
 
-  const [board, setBoard] = useState<any>(null);
+  const [board, setBoard] = useState<Board | null>(null);
   const [tasks, setTasks] = useState<TaskProps[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskProps | undefined>(undefined);
@@ -67,7 +80,7 @@ export default function BoardView() {
     columns.forEach((col) => {
       const query = columnTaskQueries[col.status];
       if (query && query.data) {
-        query.data.pages.forEach((page: any) => {
+        query.data.pages.forEach((page: PaginatedTasksResponse) => {
           allTasks.push(...page.tasks);
         });
       }
@@ -108,13 +121,23 @@ export default function BoardView() {
     setIsModalOpen(true);
   };
 
-  const handleSaveTask = async (taskData: any) => {
+  const handleSaveTask = async (taskData: TaskFormData) => {
     if (!boardId) return;
     try {
+      const updateData: TaskUpdateData = {
+        title: taskData.title,
+        description: taskData.description,
+        status: taskData.status,
+        priority: taskData.priority,
+        assignedTo: taskData.assignedTo,
+        dueDate: taskData.dueDate,
+        tags: taskData.tags,
+      };
+
       if (selectedTask) {
-        await updateTask({ taskId: selectedTask._id, data: taskData });
+        await updateTask({ taskId: selectedTask._id, data: updateData });
       } else {
-        await createTask({ ...taskData, boardId });
+        await createTask({ ...updateData, boardId });
       }
     } catch (error) {
       console.error('Failed to save task', error);
@@ -144,22 +167,22 @@ export default function BoardView() {
 
     const buildReorderResult = (
       prevTasks: TaskProps[],
-      source: any,
-      destination: any,
+      source: DraggableLocation,
+      destination: DraggableLocation,
       draggableId: string
-    ) => {
+    ): ReorderResult => {
       const newTasks = prevTasks.map((t) => ({ ...t }));
 
       const sourceColTasks = newTasks
         .filter((t) => t.status === source.droppableId)
-        .sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+        .sort((a: TaskProps, b: TaskProps) => (a.order || 0) - (b.order || 0));
 
       const destColTasks =
         source.droppableId === destination.droppableId
           ? sourceColTasks
           : newTasks
               .filter((t) => t.status === destination.droppableId)
-              .sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+              .sort((a: TaskProps, b: TaskProps) => (a.order || 0) - (b.order || 0));
 
       const movedTaskIndex = sourceColTasks.findIndex((t) => t._id === draggableId);
       if (movedTaskIndex === -1) return { computedTasks: prevTasks, tasksToUpdateItems: [] };
@@ -167,19 +190,19 @@ export default function BoardView() {
       const [movedTask] = sourceColTasks.splice(movedTaskIndex, 1);
       if (!movedTask) return { computedTasks: prevTasks, tasksToUpdateItems: [] };
 
-      movedTask.status = destination.droppableId as any;
+      movedTask.status = destination.droppableId as ColumnStatus;
       destColTasks.splice(destination.index, 0, movedTask);
 
-      const tasksToUpdateItems: any[] = [];
+      const tasksToUpdateItems: TaskUpdateItem[] = [];
       if (source.droppableId !== destination.droppableId) {
         sourceColTasks.forEach((t, i) => {
           t.order = i;
-          tasksToUpdateItems.push({ _id: t._id, status: t.status, order: i });
+          tasksToUpdateItems.push({ _id: t._id, status: t.status as ColumnStatus, order: i });
         });
       }
       destColTasks.forEach((t, i) => {
         t.order = i;
-        tasksToUpdateItems.push({ _id: t._id, status: t.status, order: i });
+        tasksToUpdateItems.push({ _id: t._id, status: t.status as ColumnStatus, order: i });
       });
 
       const otherTasks = newTasks.filter(
@@ -216,20 +239,20 @@ export default function BoardView() {
   };
 
   // Get tasks for a specific column
-  const getColumnTasks = (status: string) => {
-    const query = columnTaskQueries[status];
+  const getColumnTasks = (status: string): TaskProps[] => {
+    const query = columnTaskQueries[status as ColumnStatus];
     if (!query || !query.data) return [];
     
     const columnTasks: TaskProps[] = [];
-    query.data.pages.forEach((page: any) => {
+    query.data.pages.forEach((page: PaginatedTasksResponse) => {
       columnTasks.push(...page.tasks);
     });
     return columnTasks;
   };
 
   // Load more tasks for a column
-  const handleLoadMore = (status: string) => {
-    const query = columnTaskQueries[status];
+  const handleLoadMore = (status: string): void => {
+    const query = columnTaskQueries[status as ColumnStatus];
     if (query?.hasNextPage && !query.isFetchingNextPage) {
       query.fetchNextPage();
     }
@@ -298,7 +321,7 @@ export default function BoardView() {
         onDelete={selectedTask && hasWriteAccess ? handleDeleteTask : undefined}
         task={selectedTask}
         defaultStatus={newTaskStatus}
-        boardMembers={board.members}
+        boardMembers={board.members ?? []}
         isReadOnly={!hasWriteAccess}
         availableTags={availableTags}
         onCreateTag={async (tagData) => {
