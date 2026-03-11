@@ -59,7 +59,7 @@ export default function BoardView() {
     'in-progress': inProgressTasksQuery,
     'review': reviewTasksQuery,
     'done': doneTasksQuery,
-  }), [todoTasksQuery, inProgressTasksQuery, reviewTasksQuery, doneTasksQuery]);
+  }) as Record<ColumnStatus, typeof todoTasksQuery>, [todoTasksQuery, inProgressTasksQuery, reviewTasksQuery, doneTasksQuery]);
 
   // Combine tasks from all columns
   useEffect(() => {
@@ -216,7 +216,7 @@ export default function BoardView() {
   };
 
   // Get tasks for a specific column
-  const getColumnTasks = (status: string) => {
+  const getColumnTasks = (status: ColumnStatus) => {
     const query = columnTaskQueries[status];
     if (!query || !query.data) return [];
     
@@ -228,7 +228,7 @@ export default function BoardView() {
   };
 
   // Load more tasks for a column
-  const handleLoadMore = (status: string) => {
+  const handleLoadMore = (status: ColumnStatus) => {
     const query = columnTaskQueries[status];
     if (query?.hasNextPage && !query.isFetchingNextPage) {
       query.fetchNextPage();
