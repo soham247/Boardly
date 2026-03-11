@@ -287,16 +287,10 @@ export default function BoardView() {
     }
   };
 
-  // Get tasks for a specific column
+  // Get tasks for a specific column — reads from local state so optimistic
+  // drag-and-drop updates are reflected immediately.
   const getColumnTasks = (status: string): TaskProps[] => {
-    const query = columnTaskQueries[status as ColumnStatus];
-    if (!query || !query.data) return [];
-    
-    const columnTasks: TaskProps[] = [];
-    query.data.pages.forEach((page: PaginatedTasksResponse) => {
-      columnTasks.push(...page.tasks);
-    });
-    return columnTasks;
+    return columnTasksMap[status as ColumnStatus] ?? [];
   };
 
   // Load more tasks for a column

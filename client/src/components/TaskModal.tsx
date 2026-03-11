@@ -60,7 +60,7 @@ export interface TaskFormData {
   description: string;
   status: 'todo' | 'in-progress' | 'review' | 'done';
   priority: 'low' | 'medium' | 'high';
-  assignedTo?: string;
+  assignedTo?: string[];
   dueDate?: string;
   tags: string[];
 }

@@ -21,7 +21,7 @@ export interface Task {
   title: string;
   description?: string;
   boardId: string;
-  assignedTo?: UserInfo;
+  assignedTo?: UserInfo[];
   status: 'todo' | 'in-progress' | 'review' | 'done';
   priority: 'low' | 'medium' | 'high';
   dueDate?: string;
@@ -36,7 +36,7 @@ export interface TaskUpdateData {
   description?: string;
   status?: 'todo' | 'in-progress' | 'review' | 'done';
   priority?: 'low' | 'medium' | 'high';
-  assignedTo?: string; // User ID
+  assignedTo?: string[]; // User IDs
   dueDate?: string;
   tags?: string[]; // Tag IDs
 }
