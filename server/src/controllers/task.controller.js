@@ -15,6 +15,36 @@ async function isWsOwnerOrAdmin(board, userId) {
   return member && (member.role === 'owner' || member.role === 'admin');
 }
 
+// Check if a user has write access to a board (either as board creator, member with write role, or workspace owner/admin)
+async function checkBoardWriteAccess(board, userId) {
+  // Check if user is the board creator
+  if (board.createdBy.toString() === userId.toString()) {
+    return true;
+  }
+  // Check if user is a board member with write role
+  const member = board.members.find((m) => m.userId.toString() === userId.toString());
+  if (member && member.role === 'write') {
+    return true;
+  }
+  // Check if user is a workspace owner or admin
+  return await isWsOwnerOrAdmin(board, userId);
+}
+
+// Check if a user has read access to a board (either as board member or workspace owner/admin)
+async function checkBoardReadAccess(board, userId) {
+  // Check if user is the board creator or a board member
+  const isMember =
+    board.members.some((m) => m.userId.toString() === userId.toString()) ||
+    board.createdBy.toString() === userId.toString();
+
+  if (isMember) {
+    return true;
+  }
+
+  // Check if user is a workspace owner or admin
+  return await isWsOwnerOrAdmin(board, userId);
+}
+
 const createTask = async (req, res) => {
   try {
     const { title, description, boardId, assignedTo, status, priority, dueDate, tags } = req.body;
@@ -29,19 +59,7 @@ const createTask = async (req, res) => {
     }
 
     // Check write permission — board-level or workspace owner/admin
-    let hasWriteAccess = false;
-    if (board.createdBy.toString() === req.user._id.toString()) {
-      hasWriteAccess = true;
-    } else {
-      const member = board.members.find((m) => m.userId.toString() === req.user._id.toString());
-      if (member && member.role === 'write') {
-        hasWriteAccess = true;
-      }
-    }
-    if (!hasWriteAccess) {
-      hasWriteAccess = await isWsOwnerOrAdmin(board, req.user._id);
-    }
-
+    const hasWriteAccess = await checkBoardWriteAccess(board, req.user._id);
     if (!hasWriteAccess) {
       return res
         .status(403)
@@ -117,17 +135,11 @@ const getTasksByBoard = async (req, res) => {
     }
 
     // Check read permission — board member or workspace owner/admin
-    const isMember =
-      board.members.some((m) => m.userId.toString() === req.user._id.toString()) ||
-      board.createdBy.toString() === req.user._id.toString();
-
-    if (!isMember) {
-      const wsAccess = await isWsOwnerOrAdmin(board, req.user._id);
-      if (!wsAccess) {
-        return res
-          .status(403)
-          .json({ message: "You don't have access to view tasks on this board" });
-      }
+    const hasReadAccess = await checkBoardReadAccess(board, req.user._id);
+    if (!hasReadAccess) {
+      return res
+        .status(403)
+        .json({ message: "You don't have access to view tasks on this board" });
     }
 
     // Build query with filters
@@ -247,19 +259,7 @@ const updateTask = async (req, res) => {
     }
 
     // Check write permission — board-level or workspace owner/admin
-    let hasWriteAccess = false;
-    if (board.createdBy.toString() === req.user._id.toString()) {
-      hasWriteAccess = true;
-    } else {
-      const member = board.members.find((m) => m.userId.toString() === req.user._id.toString());
-      if (member && member.role === 'write') {
-        hasWriteAccess = true;
-      }
-    }
-    if (!hasWriteAccess) {
-      hasWriteAccess = await isWsOwnerOrAdmin(board, req.user._id);
-    }
-
+    const hasWriteAccess = await checkBoardWriteAccess(board, req.user._id);
     if (!hasWriteAccess) {
       return res
         .status(403)
@@ -334,19 +334,7 @@ const deleteTask = async (req, res) => {
     }
 
     // Check write permission — board-level or workspace owner/admin
-    let hasWriteAccess = false;
-    if (board.createdBy.toString() === req.user._id.toString()) {
-      hasWriteAccess = true;
-    } else {
-      const member = board.members.find((m) => m.userId.toString() === req.user._id.toString());
-      if (member && member.role === 'write') {
-        hasWriteAccess = true;
-      }
-    }
-    if (!hasWriteAccess) {
-      hasWriteAccess = await isWsOwnerOrAdmin(board, req.user._id);
-    }
-
+    const hasWriteAccess = await checkBoardWriteAccess(board, req.user._id);
     if (!hasWriteAccess) {
       return res
         .status(403)
@@ -394,19 +382,7 @@ const reorderTasks = async (req, res) => {
     }
 
     // Check write permission — board-level or workspace owner/admin
-    let hasWriteAccess = false;
-    if (board.createdBy.toString() === req.user._id.toString()) {
-      hasWriteAccess = true;
-    } else {
-      const member = board.members.find((m) => m.userId.toString() === req.user._id.toString());
-      if (member && member.role === 'write') {
-        hasWriteAccess = true;
-      }
-    }
-    if (!hasWriteAccess) {
-      hasWriteAccess = await isWsOwnerOrAdmin(board, req.user._id);
-    }
-
+    const hasWriteAccess = await checkBoardWriteAccess(board, req.user._id);
     if (!hasWriteAccess) {
       return res
         .status(403)
