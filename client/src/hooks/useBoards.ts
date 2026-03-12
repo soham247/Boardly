@@ -2,12 +2,29 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/api';
 import { useAuthStore } from '../store/auth-store';
 
+export interface UserInfo {
+  _id: string;
+  fullName: string;
+  username: string;
+  avatar?: string;
+}
+
+export interface BoardMember {
+  userId: UserInfo;
+  role: string;
+}
+
+export interface BoardMemberInput {
+  userId: string;
+  role: string;
+}
+
 export interface Board {
   _id: string;
   name: string;
   description?: string;
   workspaceId: string;
-  members?: { userId: string; role: string }[];
+  members?: BoardMember[];
   userRole?: 'owner' | 'write' | 'read';
   createdAt?: string;
   updatedAt?: string;
@@ -52,7 +69,7 @@ export const useBoards = (workspaceId?: string, boardId?: string) => {
       name: string;
       description?: string;
       workspaceId: string;
-      members?: { userId: string; role: string }[];
+      members?: BoardMemberInput[];
     }) => {
       const res = await api.post('/boards', data);
       return res.data;
@@ -71,7 +88,7 @@ export const useBoards = (workspaceId?: string, boardId?: string) => {
       data: {
         name?: string;
         description?: string;
-        members?: { userId: string; role: string }[];
+        members?: BoardMemberInput[];
       };
     }) => {
       const res = await api.patch(`/boards/${boardId}`, data);
