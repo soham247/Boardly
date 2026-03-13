@@ -71,8 +71,7 @@ export default function BoardView() {
     reorderTasks: reorderTasksQuery,
   } = useTasks(boardId);
 
-  const { board: queryBoard, isLoadingBoard } = useBoards(undefined, boardId);
-  const board = (queryBoard as Board | undefined) ?? null;
+  const { board, isLoadingBoard } = useBoards(undefined, boardId);
 
   const todoTasksQuery = useTasksByStatus(boardId, 'todo', TASKS_PAGE_SIZE);
   const inProgressTasksQuery = useTasksByStatus(boardId, 'in-progress', TASKS_PAGE_SIZE);
