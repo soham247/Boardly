@@ -1,6 +1,13 @@
-import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from '@tanstack/react-query';
 import api from '../lib/api';
 import { useAuthStore } from '../store/auth-store';
+
+export type TaskStatus = 'todo' | 'in-progress' | 'review' | 'done';
 
 export interface UserInfo {
   _id: string;
@@ -22,7 +29,7 @@ export interface Task {
   description?: string;
   boardId: string;
   assignedTo?: UserInfo[];
-  status: 'todo' | 'in-progress' | 'review' | 'done';
+  status: TaskStatus;
   priority: 'low' | 'medium' | 'high';
   dueDate?: string;
   order?: number;
@@ -34,7 +41,7 @@ export interface Task {
 export interface TaskUpdateData {
   title?: string;
   description?: string;
-  status?: 'todo' | 'in-progress' | 'review' | 'done';
+  status?: TaskStatus;
   priority?: 'low' | 'medium' | 'high';
   assignedTo?: string[]; // User IDs
   dueDate?: string;
@@ -49,22 +56,33 @@ export interface PaginatedTasksResponse {
   hasMore: boolean;
 }
 
+export type TasksByStatusMap = Record<TaskStatus, Task[]>;
+
+export interface TasksByStatusQueryData {
+  pages: PaginatedTasksResponse[];
+  pageParams: unknown[];
+  allTasks: Task[];
+  tasksByStatus: TasksByStatusMap;
+}
+
 // Separate hook for fetching tasks by status with pagination
 export const useTasksByStatus = (
   boardId?: string,
-  status?: 'todo' | 'in-progress' | 'review' | 'done',
+  status?: TaskStatus,
   limit = 10
 ) => {
   const { isAuthenticated } = useAuthStore();
 
-  return useInfiniteQuery<PaginatedTasksResponse>({
-    queryKey: ['tasks', boardId, status, limit],
+  return useInfiniteQuery<PaginatedTasksResponse, Error, TasksByStatusQueryData>({
+    queryKey: ['tasks', boardId, status ?? 'all', limit],
     queryFn: async ({ pageParam }) => {
-      if (!boardId || !status) {
+      if (!boardId) {
         return { message: '', tasks: [], nextCursor: null, hasMore: false };
       }
       const params = new URLSearchParams();
-      params.append('status', status);
+      if (status) {
+        params.append('status', status);
+      }
       params.append('limit', limit.toString());
       if (pageParam) {
         params.append('cursor', pageParam as string);
@@ -84,7 +102,30 @@ export const useTasksByStatus = (
       }
       return undefined;
     },
-    enabled: isAuthenticated && !!boardId && !!status,
+    select: (data) => {
+      const allTasks = data.pages
+        .flatMap((page) => page.tasks ?? [])
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+      const tasksByStatus: TasksByStatusMap = {
+        todo: [],
+        'in-progress': [],
+        review: [],
+        done: [],
+      };
+
+      allTasks.forEach((task) => {
+        tasksByStatus[task.status].push(task);
+      });
+
+      return {
+        pages: data.pages,
+        pageParams: data.pageParams,
+        allTasks,
+        tasksByStatus,
+      };
+    },
+    enabled: isAuthenticated && !!boardId,
   });
 };
 
