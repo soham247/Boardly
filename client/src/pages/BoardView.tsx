@@ -1,6 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useTasks, useTasksByStatus, type PaginatedTasksResponse, type TaskUpdateData } from '../hooks/useTasks';
+import {
+  useTasks,
+  useTasksByStatus,
+  type TaskUpdateData,
+  type TasksByStatusMap,
+  type TasksByStatusQueryData,
+} from '../hooks/useTasks';
 import { useBoards, type Board } from '../hooks/useBoards';
 import { TaskColumn } from '../components/TaskColumn';
 import { DragDropContext } from '@hello-pangea/dnd';
@@ -9,6 +15,7 @@ import { TaskModal, type TaskFormData } from '../components/TaskModal';
 import type { TaskProps } from '../components/TaskModal';
 import { Button } from '../components/ui/button';
 import { ArrowLeft, Plus } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 
 // Column type definition
 type ColumnStatus = 'todo' | 'in-progress' | 'review' | 'done';
@@ -22,7 +29,7 @@ interface TaskUpdateItem {
 
 // Type for reorder result
 interface ReorderResult {
-  computedTasks: TaskProps[];
+  tasksByStatus: TasksByStatusMap;
   tasksToUpdateItems: TaskUpdateItem[];
 }
 
@@ -41,9 +48,15 @@ const columns: Column[] = [
 export default function BoardView() {
   const { boardId } = useParams<{ boardId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const TASKS_PAGE_SIZE = 50;
+  const EMPTY_COLUMN_TASKS: TasksByStatusMap = {
+    todo: [],
+    'in-progress': [],
+    review: [],
+    done: [],
+  };
 
-  const [board, setBoard] = useState<Board | null>(null);
-  const [tasks, setTasks] = useState<TaskProps[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskProps | undefined>(undefined);
   const [newTaskStatus, setNewTaskStatus] = useState<ColumnStatus>('todo');
@@ -56,98 +69,16 @@ export default function BoardView() {
     deleteTask,
     createTag: createTagQuery,
     reorderTasks: reorderTasksQuery,
-    isReordering,
   } = useTasks(boardId);
 
   const { board: queryBoard, isLoadingBoard } = useBoards(undefined, boardId);
+  const board = (queryBoard as Board | undefined) ?? null;
 
-  // Create separate infinite queries for each column - hooks must be at top level
-  const todoTasksQuery = useTasksByStatus(boardId, 'todo', 10);
-  const inProgressTasksQuery = useTasksByStatus(boardId, 'in-progress', 10);
-  const reviewTasksQuery = useTasksByStatus(boardId, 'review', 10);
-  const doneTasksQuery = useTasksByStatus(boardId, 'done', 10);
+  const boardTasksQuery = useTasksByStatus(boardId, undefined, TASKS_PAGE_SIZE);
+  const columnTasksMap = boardTasksQuery.data?.tasksByStatus ?? EMPTY_COLUMN_TASKS;
 
-  // Store queries in a map for easy access
-  const columnTaskQueries = useMemo(
-    () => ({
-      todo: todoTasksQuery,
-      'in-progress': inProgressTasksQuery,
-      review: reviewTasksQuery,
-      done: doneTasksQuery,
-    }),
-    [
-      todoTasksQuery.data,
-      todoTasksQuery.isLoading,
-      todoTasksQuery.hasNextPage,
-      todoTasksQuery.isFetchingNextPage,
-      inProgressTasksQuery.data,
-      inProgressTasksQuery.isLoading,
-      inProgressTasksQuery.hasNextPage,
-      inProgressTasksQuery.isFetchingNextPage,
-      reviewTasksQuery.data,
-      reviewTasksQuery.isLoading,
-      reviewTasksQuery.hasNextPage,
-      reviewTasksQuery.isFetchingNextPage,
-      doneTasksQuery.data,
-      doneTasksQuery.isLoading,
-      doneTasksQuery.hasNextPage,
-      doneTasksQuery.isFetchingNextPage,
-    ]
-  );
-
-  // Combine tasks from all columns
-  useEffect(() => {
-    if (isReordering) return;
-    const allTasks: TaskProps[] = [];
-    columns.forEach((col) => {
-      const query = columnTaskQueries[col.status];
-      if (query && query.data) {
-        query.data.pages.forEach((page: PaginatedTasksResponse) => {
-          allTasks.push(...page.tasks);
-        });
-      }
-    });
-    setTasks(allTasks);
-  }, [
-    todoTasksQuery.data,
-    inProgressTasksQuery.data,
-    reviewTasksQuery.data,
-    doneTasksQuery.data,
-    isReordering,
-  ]);
-
-  // Check if any column is loading
-  const isLoadingTasks = columns.some((col) => columnTaskQueries[col.status]?.isLoading);
-
-  useEffect(() => {
-    if (queryBoard) {
-      setBoard(queryBoard);
-    }
-  }, [queryBoard]);
-
-  // Memoize column tasks to prevent unnecessary re-renders
-  // Must be above early returns so hooks are called unconditionally
-  const columnTasksMap = useMemo(() => {
-    const map: Record<ColumnStatus, TaskProps[]> = {
-      todo: [],
-      'in-progress': [],
-      review: [],
-      done: [],
-    };
-
-    tasks.forEach((t) => {
-      if (t.status in map) {
-        map[t.status as ColumnStatus].push(t);
-      }
-    });
-
-    // Sort each column
-    columns.forEach((col) => {
-      map[col.status].sort((a, b) => (a.order || 0) - (b.order || 0));
-    });
-
-    return map;
-  }, [tasks]);
+  const tasksQueryKey = ['tasks', boardId, 'all', TASKS_PAGE_SIZE] as const;
+  const isLoadingTasks = boardTasksQuery.isLoading;
 
   if (isLoadingBoard || isLoadingTags || isLoadingTasks) {
     return <div className="p-8">Loading board...</div>;
@@ -215,61 +146,57 @@ export default function BoardView() {
     }
 
     const buildReorderResult = (
-      prevTasks: TaskProps[],
+      prevTasksByStatus: TasksByStatusMap,
       source: DraggableLocation,
       destination: DraggableLocation,
       draggableId: string
     ): ReorderResult => {
-      const newTasks = prevTasks.map((t) => ({ ...t }));
+      const sourceStatus = source.droppableId as ColumnStatus;
+      const destinationStatus = destination.droppableId as ColumnStatus;
 
-      const sourceColTasks = newTasks
-        .filter((t) => t.status === source.droppableId)
-        .sort((a: TaskProps, b: TaskProps) => (a.order || 0) - (b.order || 0));
-
-      const destColTasks =
-        source.droppableId === destination.droppableId
+      const sourceColTasks = [...(prevTasksByStatus[sourceStatus] ?? [])].map((t) => ({ ...t }));
+      const destinationColTasks =
+        sourceStatus === destinationStatus
           ? sourceColTasks
-          : newTasks
-              .filter((t) => t.status === destination.droppableId)
-              .sort((a: TaskProps, b: TaskProps) => (a.order || 0) - (b.order || 0));
+          : [...(prevTasksByStatus[destinationStatus] ?? [])].map((t) => ({ ...t }));
 
       const movedTaskIndex = sourceColTasks.findIndex((t) => t._id === draggableId);
-      if (movedTaskIndex === -1) return { computedTasks: prevTasks, tasksToUpdateItems: [] };
+      if (movedTaskIndex === -1) {
+        return { tasksByStatus: prevTasksByStatus, tasksToUpdateItems: [] };
+      }
 
       const [movedTask] = sourceColTasks.splice(movedTaskIndex, 1);
-      if (!movedTask) return { computedTasks: prevTasks, tasksToUpdateItems: [] };
+      if (!movedTask) {
+        return { tasksByStatus: prevTasksByStatus, tasksToUpdateItems: [] };
+      }
 
-      movedTask.status = destination.droppableId as ColumnStatus;
-      destColTasks.splice(destination.index, 0, movedTask);
+      movedTask.status = destinationStatus;
+      destinationColTasks.splice(destination.index, 0, movedTask);
 
       const tasksToUpdateItems: TaskUpdateItem[] = [];
-      if (source.droppableId !== destination.droppableId) {
+      if (sourceStatus !== destinationStatus) {
         sourceColTasks.forEach((t, i) => {
           t.order = i;
           tasksToUpdateItems.push({ _id: t._id, status: t.status as ColumnStatus, order: i });
         });
       }
-      destColTasks.forEach((t, i) => {
+      destinationColTasks.forEach((t, i) => {
         t.order = i;
         tasksToUpdateItems.push({ _id: t._id, status: t.status as ColumnStatus, order: i });
       });
 
-      const otherTasks = newTasks.filter(
-        (t) => t.status !== source.droppableId && t.status !== destination.droppableId
-      );
+      const nextTasksByStatus: TasksByStatusMap = {
+        ...prevTasksByStatus,
+        [sourceStatus]: sourceColTasks,
+        [destinationStatus]: destinationColTasks,
+      };
 
-      const finalTasks = [
-        ...otherTasks,
-        ...sourceColTasks,
-        ...(source.droppableId === destination.droppableId ? [] : destColTasks),
-      ];
-
-      return { computedTasks: finalTasks, tasksToUpdateItems };
+      return { tasksByStatus: nextTasksByStatus, tasksToUpdateItems };
     };
 
-    const previousTasks = tasks;
-    const { computedTasks, tasksToUpdateItems } = buildReorderResult(
-      tasks,
+    const previousTasksByStatus = columnTasksMap;
+    const { tasksByStatus, tasksToUpdateItems } = buildReorderResult(
+      previousTasksByStatus,
       source,
       destination,
       draggableId
@@ -277,13 +204,35 @@ export default function BoardView() {
 
     if (tasksToUpdateItems.length === 0) return;
 
-    setTasks(computedTasks);
+    const allTasks = columns.flatMap((column) => tasksByStatus[column.status] ?? []);
+
+    queryClient.setQueryData<TasksByStatusQueryData>(tasksQueryKey, (previousData) => {
+      if (!previousData) return previousData;
+
+      return {
+        ...previousData,
+        allTasks,
+        tasksByStatus,
+      };
+    });
 
     try {
       await reorderTasksQuery(tasksToUpdateItems);
     } catch (err) {
       console.error('Reorder failed, rolling back state', err);
-      setTasks(() => previousTasks);
+      queryClient.setQueryData<TasksByStatusQueryData>(tasksQueryKey, (previousData) => {
+        if (!previousData) return previousData;
+
+        const rollbackAllTasks = columns.flatMap(
+          (column) => previousTasksByStatus[column.status] ?? []
+        );
+
+        return {
+          ...previousData,
+          allTasks: rollbackAllTasks,
+          tasksByStatus: previousTasksByStatus,
+        };
+      });
     }
   };
 
@@ -294,10 +243,9 @@ export default function BoardView() {
   };
 
   // Load more tasks for a column
-  const handleLoadMore = (status: string): void => {
-    const query = columnTaskQueries[status as ColumnStatus];
-    if (query?.hasNextPage && !query.isFetchingNextPage) {
-      query.fetchNextPage();
+  const handleLoadMore = (_status: string): void => {
+    if (boardTasksQuery.hasNextPage && !boardTasksQuery.isFetchingNextPage) {
+      boardTasksQuery.fetchNextPage();
     }
   };
 
@@ -352,8 +300,8 @@ export default function BoardView() {
                 tasks={getColumnTasks(col.status)}
                 onTaskClick={handleOpenEditModal}
                 onLoadMore={() => handleLoadMore(col.status)}
-                hasMore={columnTaskQueries[col.status]?.hasNextPage ?? false}
-                isLoadingMore={columnTaskQueries[col.status]?.isFetchingNextPage ?? false}
+                hasMore={boardTasksQuery.hasNextPage ?? false}
+                isLoadingMore={boardTasksQuery.isFetchingNextPage ?? false}
               />
             </div>
           ))}
