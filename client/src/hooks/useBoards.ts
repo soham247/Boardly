@@ -54,10 +54,10 @@ export const useBoards = (workspaceId?: string, boardId?: string) => {
     data: board,
     isLoading: isLoadingBoard,
     error: boardError,
-  } = useQuery<Board>({
+  } = useQuery<Board | null>({
     queryKey: ['board', boardId],
     queryFn: async () => {
-      if (!boardId) return null as any;
+      if (!boardId) return null;
       const res = await api.get(`/boards/${boardId}`);
       return res.data.board;
     },
