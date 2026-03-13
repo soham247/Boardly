@@ -3,11 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   useTasks,
   useTasksByStatus,
+  type Task,
   type TaskUpdateData,
   type TasksByStatusMap,
-  type TasksByStatusQueryData,
+  type PaginatedTasksResponse,
 } from '../hooks/useTasks';
-import { useBoards, type Board } from '../hooks/useBoards';
+import { useBoards } from '../hooks/useBoards';
 import { TaskColumn } from '../components/TaskColumn';
 import { DragDropContext } from '@hello-pangea/dnd';
 import type { DropResult, DraggableLocation } from '@hello-pangea/dnd';
@@ -15,7 +16,7 @@ import { TaskModal, type TaskFormData } from '../components/TaskModal';
 import type { TaskProps } from '../components/TaskModal';
 import { Button } from '../components/ui/button';
 import { ArrowLeft, Plus } from 'lucide-react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, type InfiniteData } from '@tanstack/react-query';
 
 // Column type definition
 type ColumnStatus = 'todo' | 'in-progress' | 'review' | 'done';
@@ -229,20 +230,37 @@ export default function BoardView() {
 
     if (tasksToUpdateItems.length === 0) return;
 
-    const updateColumnQueryCache = (status: ColumnStatus, nextColumnTasks: TaskProps[]) => {
+    // Patch tasks into the existing paginated cache while preserving page boundaries.
+    // For each page: replace tasks whose IDs appear in nextColumnTasks, remove tasks
+    // that were moved out. Tasks that are new to this column (moved in from another
+    // column) are prepended to page 0 so they're immediately visible.
+    const updateColumnQueryCache = (status: ColumnStatus, nextColumnTasks: Task[]) => {
       const queryKey = tasksQueryKeyByStatus[status];
+      const nextTasksMap = new Map(nextColumnTasks.map((t) => [t._id, t]));
 
-      queryClient.setQueryData<TasksByStatusQueryData>(queryKey, (previousData) => {
+      queryClient.setQueryData<InfiniteData<PaginatedTasksResponse>>(queryKey, (previousData) => {
         if (!previousData) return previousData;
 
-        return {
-          ...previousData,
-          allTasks: nextColumnTasks,
-          tasksByStatus: {
-            ...previousData.tasksByStatus,
-            [status]: nextColumnTasks,
-          },
-        };
+        const placedIds = new Set<string>();
+
+        const newPages = previousData.pages.map((page) => {
+          const updatedTasks = page.tasks
+            .filter((t) => nextTasksMap.has(t._id))
+            .map((t) => {
+              const updated = nextTasksMap.get(t._id)!;
+              placedIds.add(t._id);
+              return updated;
+            });
+          return { ...page, tasks: updatedTasks };
+        });
+
+        // Tasks moved INTO this column won't exist in any existing page yet.
+        const unplacedTasks = nextColumnTasks.filter((t) => !placedIds.has(t._id));
+        if (unplacedTasks.length > 0 && newPages.length > 0) {
+          newPages[0] = { ...newPages[0], tasks: [...unplacedTasks, ...newPages[0].tasks] };
+        }
+
+        return { ...previousData, pages: newPages };
       });
     };
 
@@ -258,35 +276,9 @@ export default function BoardView() {
       const sourceStatus = source.droppableId as ColumnStatus;
       const destinationStatus = destination.droppableId as ColumnStatus;
 
-      const rollbackSourceTasks = previousTasksByStatus[sourceStatus] ?? [];
-      const rollbackDestinationTasks = previousTasksByStatus[destinationStatus] ?? [];
-
-      queryClient.setQueryData<TasksByStatusQueryData>(tasksQueryKeyByStatus[sourceStatus], (previousData) => {
-        if (!previousData) return previousData;
-
-        return {
-          ...previousData,
-          allTasks: rollbackSourceTasks,
-          tasksByStatus: {
-            ...previousData.tasksByStatus,
-            [sourceStatus]: rollbackSourceTasks,
-          },
-        };
-      });
-
+      updateColumnQueryCache(sourceStatus, previousTasksByStatus[sourceStatus] ?? []);
       if (sourceStatus !== destinationStatus) {
-        queryClient.setQueryData<TasksByStatusQueryData>(tasksQueryKeyByStatus[destinationStatus], (previousData) => {
-          if (!previousData) return previousData;
-
-          return {
-            ...previousData,
-            allTasks: rollbackDestinationTasks,
-            tasksByStatus: {
-              ...previousData.tasksByStatus,
-              [destinationStatus]: rollbackDestinationTasks,
-            },
-          };
-        });
+        updateColumnQueryCache(destinationStatus, previousTasksByStatus[destinationStatus] ?? []);
       }
     }
   };
