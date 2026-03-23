@@ -17,16 +17,12 @@ import type { TaskProps } from '../components/TaskModal';
 import { Button } from '../components/ui/button';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { useQueryClient, type InfiniteData } from '@tanstack/react-query';
-
-// Column type definition
-type ColumnStatus = 'todo' | 'in-progress' | 'review' | 'done';
-
-// Type for task update items in reorder operation
-interface TaskUpdateItem {
-  _id: string;
-  status: ColumnStatus;
-  order: number;
-}
+import { toast } from 'sonner';
+import {
+  useTaskReorderMutation,
+  type ColumnStatus,
+  type TaskUpdateItem,
+} from '../hooks/useTaskReorderMutation';
 
 // Type for reorder result
 interface ReorderResult {
@@ -69,7 +65,6 @@ export default function BoardView() {
     updateTask,
     deleteTask,
     createTag: createTagQuery,
-    reorderTasks: reorderTasksQuery,
   } = useTasks(boardId);
 
   const { board, isLoadingBoard } = useBoards(undefined, boardId);
@@ -105,6 +100,45 @@ export default function BoardView() {
     inProgressTasksQuery.isLoading ||
     reviewTasksQuery.isLoading ||
     doneTasksQuery.isLoading;
+
+  // Patch tasks into the existing paginated cache while preserving page boundaries.
+  // For each page: replace tasks whose IDs appear in nextColumnTasks, remove tasks
+  // that were moved out. Tasks that are new to this column (moved in from another
+  // column) are prepended to page 0 so they're immediately visible.
+  const updateColumnQueryCache = (status: ColumnStatus, nextColumnTasks: Task[]) => {
+    const queryKey = tasksQueryKeyByStatus[status];
+    const nextTasksMap = new Map(nextColumnTasks.map((t) => [t._id, t]));
+
+    queryClient.setQueryData<InfiniteData<PaginatedTasksResponse>>(queryKey, (previousData) => {
+      if (!previousData) return previousData;
+
+      const placedIds = new Set<string>();
+
+      const newPages = previousData.pages.map((page) => {
+        const updatedTasks = page.tasks
+          .filter((t) => nextTasksMap.has(t._id))
+          .map((t) => {
+            const updated = nextTasksMap.get(t._id)!;
+            placedIds.add(t._id);
+            return updated;
+          });
+        return { ...page, tasks: updatedTasks };
+      });
+
+      // Tasks moved INTO this column won't exist in any existing page yet.
+      const unplacedTasks = nextColumnTasks.filter((t) => !placedIds.has(t._id));
+      if (unplacedTasks.length > 0 && newPages.length > 0) {
+        newPages[0] = { ...newPages[0], tasks: [...unplacedTasks, ...newPages[0].tasks] };
+      }
+
+      return { ...previousData, pages: newPages };
+    });
+  };
+
+  const reorderTasksMutation = useTaskReorderMutation({
+    tasksQueryKeyByStatus,
+    updateColumnQueryCache,
+  });
 
   if (isLoadingBoard || isLoadingTags || isLoadingTasks) {
     return <div className="p-8">Loading board...</div>;
@@ -147,8 +181,8 @@ export default function BoardView() {
         await createTask({ ...updateData, boardId });
       }
     } catch (error) {
-      console.error('Failed to save task', error);
-      alert('Error saving task');
+      const message = error instanceof Error ? error.message : 'Unable to save task';
+      toast.error(`Failed to save task: ${message}`);
     }
   };
 
@@ -158,7 +192,8 @@ export default function BoardView() {
       await deleteTask(selectedTask._id);
       setIsModalOpen(false);
     } catch (error) {
-      console.error('Failed to delete task', error);
+      const message = error instanceof Error ? error.message : 'Unable to delete task';
+      toast.error(`Failed to delete task: ${message}`);
     }
   };
 
@@ -230,57 +265,14 @@ export default function BoardView() {
 
     if (tasksToUpdateItems.length === 0) return;
 
-    // Patch tasks into the existing paginated cache while preserving page boundaries.
-    // For each page: replace tasks whose IDs appear in nextColumnTasks, remove tasks
-    // that were moved out. Tasks that are new to this column (moved in from another
-    // column) are prepended to page 0 so they're immediately visible.
-    const updateColumnQueryCache = (status: ColumnStatus, nextColumnTasks: Task[]) => {
-      const queryKey = tasksQueryKeyByStatus[status];
-      const nextTasksMap = new Map(nextColumnTasks.map((t) => [t._id, t]));
-
-      queryClient.setQueryData<InfiniteData<PaginatedTasksResponse>>(queryKey, (previousData) => {
-        if (!previousData) return previousData;
-
-        const placedIds = new Set<string>();
-
-        const newPages = previousData.pages.map((page) => {
-          const updatedTasks = page.tasks
-            .filter((t) => nextTasksMap.has(t._id))
-            .map((t) => {
-              const updated = nextTasksMap.get(t._id)!;
-              placedIds.add(t._id);
-              return updated;
-            });
-          return { ...page, tasks: updatedTasks };
-        });
-
-        // Tasks moved INTO this column won't exist in any existing page yet.
-        const unplacedTasks = nextColumnTasks.filter((t) => !placedIds.has(t._id));
-        if (unplacedTasks.length > 0 && newPages.length > 0) {
-          newPages[0] = { ...newPages[0], tasks: [...unplacedTasks, ...newPages[0].tasks] };
-        }
-
-        return { ...previousData, pages: newPages };
-      });
-    };
-
-    updateColumnQueryCache(source.droppableId as ColumnStatus, tasksByStatus[source.droppableId as ColumnStatus] ?? []);
-    if (source.droppableId !== destination.droppableId) {
-      updateColumnQueryCache(destination.droppableId as ColumnStatus, tasksByStatus[destination.droppableId as ColumnStatus] ?? []);
-    }
-
-    try {
-      await reorderTasksQuery(tasksToUpdateItems);
-    } catch (err) {
-      console.error('Reorder failed, rolling back state', err);
-      const sourceStatus = source.droppableId as ColumnStatus;
-      const destinationStatus = destination.droppableId as ColumnStatus;
-
-      updateColumnQueryCache(sourceStatus, previousTasksByStatus[sourceStatus] ?? []);
-      if (sourceStatus !== destinationStatus) {
-        updateColumnQueryCache(destinationStatus, previousTasksByStatus[destinationStatus] ?? []);
-      }
-    }
+    await reorderTasksMutation.mutateAsync({
+      boardId,
+      tasksToUpdateItems,
+      sourceStatus: source.droppableId as ColumnStatus,
+      destinationStatus: destination.droppableId as ColumnStatus,
+      optimisticTasksByStatus: tasksByStatus,
+      previousTasksByStatus,
+    });
   };
 
   // Get tasks for a specific column — reads from local state so optimistic
