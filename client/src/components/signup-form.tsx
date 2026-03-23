@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Github, Eye, EyeOff } from 'lucide-react';
+import { GitBranch, Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth-store';
 import { useState } from 'react';
@@ -138,7 +138,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                     window.location.href = `${import.meta.env.VITE_API_URL}/oauth/github`;
                   }}
                 >
-                  <Github />
+                  <GitBranch />
                   <span>Continue with Github</span>
                 </Button>
                 <FieldDescription className="px-6 text-center mt-4">
