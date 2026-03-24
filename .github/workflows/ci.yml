@@ -45,5 +45,6 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./client/coverage/coverage-final.json,./server/coverage/coverage-final.json
         if: always()
