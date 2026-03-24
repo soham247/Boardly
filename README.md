@@ -60,7 +60,7 @@ This repository contains both the client and server code.
 ### 📋 Tasks
 
 - Create tasks within a board
-- Edit task details
+- Edit the task details
 - Delete tasks (permission-based)
 - Task fields include:
   - Title

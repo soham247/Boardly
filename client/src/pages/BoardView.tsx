@@ -3,36 +3,23 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   useTasks,
   useTasksByStatus,
-  type Task,
   type TaskUpdateData,
   type TasksByStatusMap,
-  type PaginatedTasksResponse,
 } from '../hooks/useTasks';
 import { useBoards } from '../hooks/useBoards';
 import { TaskColumn } from '../components/TaskColumn';
 import { DragDropContext } from '@hello-pangea/dnd';
-import type { DropResult, DraggableLocation } from '@hello-pangea/dnd';
+import type { DropResult } from '@hello-pangea/dnd';
 import { TaskModal, type TaskFormData } from '../components/TaskModal';
 import type { TaskProps } from '../components/TaskModal';
 import { Button } from '../components/ui/button';
 import { ArrowLeft, Plus } from 'lucide-react';
-import { useQueryClient, type InfiniteData } from '@tanstack/react-query';
-
-// Column type definition
-type ColumnStatus = 'todo' | 'in-progress' | 'review' | 'done';
-
-// Type for task update items in reorder operation
-interface TaskUpdateItem {
-  _id: string;
-  status: ColumnStatus;
-  order: number;
-}
-
-// Type for reorder result
-interface ReorderResult {
-  tasksByStatus: TasksByStatusMap;
-  tasksToUpdateItems: TaskUpdateItem[];
-}
+import { toast } from 'sonner';
+import {
+  buildReorderResult,
+  type ColumnStatus,
+} from '../lib/taskReorder';
+import { useOptimisticTaskReorder } from '../hooks/useOptimisticTaskReorder';
 
 interface Column {
   title: string;
@@ -49,7 +36,6 @@ const columns: Column[] = [
 export default function BoardView() {
   const { boardId } = useParams<{ boardId: string }>();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const TASKS_PAGE_SIZE = 50;
   const EMPTY_COLUMN_TASKS: TasksByStatusMap = {
     todo: [],
@@ -69,7 +55,6 @@ export default function BoardView() {
     updateTask,
     deleteTask,
     createTag: createTagQuery,
-    reorderTasks: reorderTasksQuery,
   } = useTasks(boardId);
 
   const { board, isLoadingBoard } = useBoards(undefined, boardId);
@@ -99,6 +84,16 @@ export default function BoardView() {
     review: ['tasks', boardId, 'review', TASKS_PAGE_SIZE] as const,
     done: ['tasks', boardId, 'done', TASKS_PAGE_SIZE] as const,
   };
+
+  const getErrorMessage = (error: unknown, fallback: string): string => {
+    if (typeof error === 'object' && error !== null) {
+      const maybeError = error as { response?: { data?: { message?: string } }; message?: string };
+      return maybeError.response?.data?.message ?? maybeError.message ?? fallback;
+    }
+    return fallback;
+  };
+
+  const reorderMutation = useOptimisticTaskReorder({ boardId, tasksQueryKeyByStatus });
 
   const isLoadingTasks =
     todoTasksQuery.isLoading ||
@@ -147,8 +142,7 @@ export default function BoardView() {
         await createTask({ ...updateData, boardId });
       }
     } catch (error) {
-      console.error('Failed to save task', error);
-      alert('Error saving task');
+      toast.error(getErrorMessage(error, 'Failed to save task.'));
     }
   };
 
@@ -158,7 +152,7 @@ export default function BoardView() {
       await deleteTask(selectedTask._id);
       setIsModalOpen(false);
     } catch (error) {
-      console.error('Failed to delete task', error);
+      toast.error(getErrorMessage(error, 'Failed to delete task.'));
     }
   };
 
@@ -171,58 +165,8 @@ export default function BoardView() {
       return;
     }
 
-    const buildReorderResult = (
-      prevTasksByStatus: TasksByStatusMap,
-      source: DraggableLocation,
-      destination: DraggableLocation,
-      draggableId: string
-    ): ReorderResult => {
-      const sourceStatus = source.droppableId as ColumnStatus;
-      const destinationStatus = destination.droppableId as ColumnStatus;
-
-      const sourceColTasks = [...(prevTasksByStatus[sourceStatus] ?? [])].map((t) => ({ ...t }));
-      const destinationColTasks =
-        sourceStatus === destinationStatus
-          ? sourceColTasks
-          : [...(prevTasksByStatus[destinationStatus] ?? [])].map((t) => ({ ...t }));
-
-      const movedTaskIndex = sourceColTasks.findIndex((t) => t._id === draggableId);
-      if (movedTaskIndex === -1) {
-        return { tasksByStatus: prevTasksByStatus, tasksToUpdateItems: [] };
-      }
-
-      const [movedTask] = sourceColTasks.splice(movedTaskIndex, 1);
-      if (!movedTask) {
-        return { tasksByStatus: prevTasksByStatus, tasksToUpdateItems: [] };
-      }
-
-      movedTask.status = destinationStatus;
-      destinationColTasks.splice(destination.index, 0, movedTask);
-
-      const tasksToUpdateItems: TaskUpdateItem[] = [];
-      if (sourceStatus !== destinationStatus) {
-        sourceColTasks.forEach((t, i) => {
-          t.order = i;
-          tasksToUpdateItems.push({ _id: t._id, status: t.status as ColumnStatus, order: i });
-        });
-      }
-      destinationColTasks.forEach((t, i) => {
-        t.order = i;
-        tasksToUpdateItems.push({ _id: t._id, status: t.status as ColumnStatus, order: i });
-      });
-
-      const nextTasksByStatus: TasksByStatusMap = {
-        ...prevTasksByStatus,
-        [sourceStatus]: sourceColTasks,
-        [destinationStatus]: destinationColTasks,
-      };
-
-      return { tasksByStatus: nextTasksByStatus, tasksToUpdateItems };
-    };
-
-    const previousTasksByStatus = columnTasksMap;
     const { tasksByStatus, tasksToUpdateItems } = buildReorderResult(
-      previousTasksByStatus,
+      columnTasksMap,
       source,
       destination,
       draggableId
@@ -230,57 +174,12 @@ export default function BoardView() {
 
     if (tasksToUpdateItems.length === 0) return;
 
-    // Patch tasks into the existing paginated cache while preserving page boundaries.
-    // For each page: replace tasks whose IDs appear in nextColumnTasks, remove tasks
-    // that were moved out. Tasks that are new to this column (moved in from another
-    // column) are prepended to page 0 so they're immediately visible.
-    const updateColumnQueryCache = (status: ColumnStatus, nextColumnTasks: Task[]) => {
-      const queryKey = tasksQueryKeyByStatus[status];
-      const nextTasksMap = new Map(nextColumnTasks.map((t) => [t._id, t]));
-
-      queryClient.setQueryData<InfiniteData<PaginatedTasksResponse>>(queryKey, (previousData) => {
-        if (!previousData) return previousData;
-
-        const placedIds = new Set<string>();
-
-        const newPages = previousData.pages.map((page) => {
-          const updatedTasks = page.tasks
-            .filter((t) => nextTasksMap.has(t._id))
-            .map((t) => {
-              const updated = nextTasksMap.get(t._id)!;
-              placedIds.add(t._id);
-              return updated;
-            });
-          return { ...page, tasks: updatedTasks };
-        });
-
-        // Tasks moved INTO this column won't exist in any existing page yet.
-        const unplacedTasks = nextColumnTasks.filter((t) => !placedIds.has(t._id));
-        if (unplacedTasks.length > 0 && newPages.length > 0) {
-          newPages[0] = { ...newPages[0], tasks: [...unplacedTasks, ...newPages[0].tasks] };
-        }
-
-        return { ...previousData, pages: newPages };
-      });
-    };
-
-    updateColumnQueryCache(source.droppableId as ColumnStatus, tasksByStatus[source.droppableId as ColumnStatus] ?? []);
-    if (source.droppableId !== destination.droppableId) {
-      updateColumnQueryCache(destination.droppableId as ColumnStatus, tasksByStatus[destination.droppableId as ColumnStatus] ?? []);
-    }
-
-    try {
-      await reorderTasksQuery(tasksToUpdateItems);
-    } catch (err) {
-      console.error('Reorder failed, rolling back state', err);
-      const sourceStatus = source.droppableId as ColumnStatus;
-      const destinationStatus = destination.droppableId as ColumnStatus;
-
-      updateColumnQueryCache(sourceStatus, previousTasksByStatus[sourceStatus] ?? []);
-      if (sourceStatus !== destinationStatus) {
-        updateColumnQueryCache(destinationStatus, previousTasksByStatus[destinationStatus] ?? []);
-      }
-    }
+    await reorderMutation.mutateAsync({
+      source,
+      destination,
+      nextTasksByStatus: tasksByStatus,
+      tasksToUpdateItems,
+    });
   };
 
   // Get tasks for a specific column — reads from local state so optimistic

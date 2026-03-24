@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Field, FieldGroup, FieldLabel, FieldDescription } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
-import { Github, Eye, EyeOff } from 'lucide-react'; //for password visibility toggle
+import { GitBranch, Eye, EyeOff } from 'lucide-react'; //for password visibility toggle
 
 import { useAuthStore } from '@/store/auth-store';
 import { useNavigate } from 'react-router-dom';
@@ -114,7 +114,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                     window.location.href = `${import.meta.env.VITE_API_URL}/oauth/github`;
                   }}
                 >
-                  <Github />
+                  <GitBranch />
                   <span>Login with Github</span>
                 </Button>
 
