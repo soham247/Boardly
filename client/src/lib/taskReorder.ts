@@ -78,26 +78,13 @@ export const patchTasksByStatusCache = (
     const placedIds = new Set<string>();
 
     const pages = previousData.pages.map((page) => {
-      const tasks: Task[] = [];
-
-      // Process existing tasks: replace if in nextTasksMap, otherwise keep original
-      for (const task of page.tasks) {
-        if (nextTasksMap.has(task._id)) {
+      const tasks = page.tasks
+        .filter((task) => nextTasksMap.has(task._id))
+        .map((task) => {
           const updatedTask = nextTasksMap.get(task._id)!;
           placedIds.add(task._id);
-          tasks.push(updatedTask);
-        } else {
-          tasks.push(task);
-        }
-      }
-
-      // Append remaining tasks from nextTasksMap that weren't already in the page
-      for (const [taskId, task] of nextTasksMap) {
-        if (!placedIds.has(taskId)) {
-          tasks.push(task);
-          placedIds.add(taskId);
-        }
-      }
+          return updatedTask;
+        });
 
       return { ...page, tasks };
     });

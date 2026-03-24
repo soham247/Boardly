@@ -44,9 +44,6 @@ export const useOptimisticTaskReorder = ({
 
   return useMutation<unknown, unknown, ReorderMutationVariables, ReorderMutationContext>({
     mutationFn: async ({ tasksToUpdateItems }) => {
-      if (!boardId) {
-        throw new Error('Missing boardId in useOptimisticTaskReorder mutation');
-      }
       const res = await api.put(`/tasks/board/${boardId}/reorder`, { tasks: tasksToUpdateItems });
       return res.data;
     },
