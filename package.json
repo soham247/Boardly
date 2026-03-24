@@ -5,7 +5,20 @@
   "main": "index.js",
   "scripts": {
     "format": "prettier --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "build": "cd client && npm run build",
+    "test": "npm run test:client && npm run test:server",
+    "test:client": "cd client && npm run test",
+    "test:server": "cd server && npm run test",
+    "lint": "npm run lint:client && npm run lint:server",
+    "lint:client": "cd client && npm run lint",
+    "lint:server": "cd server && npm run lint",
+    "lint:fix": "npm run lint:fix:client && npm run lint:fix:server",
+    "lint:fix:client": "cd client && npm run lint",
+    "lint:fix:server": "cd server && npm run lint:fix"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,css,md}": [
@@ -25,6 +38,7 @@
   },
   "homepage": "https://github.com/soham247/Boardly#readme",
   "devDependencies": {
+    "concurrently": "^9.2.2",
     "eslint": "^10.0.2",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
