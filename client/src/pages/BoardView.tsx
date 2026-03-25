@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   useTasks,
@@ -15,10 +15,8 @@ import type { TaskProps } from '../components/TaskModal';
 import { Button } from '../components/ui/button';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  buildReorderResult,
-  type ColumnStatus,
-} from '../lib/taskReorder';
+import { buildReorderResult, type ColumnStatus } from '../lib/taskReorder';
+import { getErrorMessage } from '../lib/errorUtils';
 import { useOptimisticTaskReorder } from '../hooks/useOptimisticTaskReorder';
 
 interface Column {
@@ -78,20 +76,15 @@ export default function BoardView() {
     done: doneTasksQuery,
   } as const;
 
-  const tasksQueryKeyByStatus = {
-    todo: ['tasks', boardId, 'todo', TASKS_PAGE_SIZE] as const,
-    'in-progress': ['tasks', boardId, 'in-progress', TASKS_PAGE_SIZE] as const,
-    review: ['tasks', boardId, 'review', TASKS_PAGE_SIZE] as const,
-    done: ['tasks', boardId, 'done', TASKS_PAGE_SIZE] as const,
-  };
-
-  const getErrorMessage = (error: unknown, fallback: string): string => {
-    if (typeof error === 'object' && error !== null) {
-      const maybeError = error as { response?: { data?: { message?: string } }; message?: string };
-      return maybeError.response?.data?.message ?? maybeError.message ?? fallback;
-    }
-    return fallback;
-  };
+  const tasksQueryKeyByStatus = useMemo(
+    () => ({
+      todo: ['tasks', boardId, 'todo', TASKS_PAGE_SIZE] as const,
+      'in-progress': ['tasks', boardId, 'in-progress', TASKS_PAGE_SIZE] as const,
+      review: ['tasks', boardId, 'review', TASKS_PAGE_SIZE] as const,
+      done: ['tasks', boardId, 'done', TASKS_PAGE_SIZE] as const,
+    }),
+    [boardId]
+  );
 
   const reorderMutation = useOptimisticTaskReorder({ boardId, tasksQueryKeyByStatus });
 

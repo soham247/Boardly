@@ -15,5 +15,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     globals: false,
+    env: {
+      VITE_API_URL: 'http://localhost/api/v1',
+    },
   },
 });

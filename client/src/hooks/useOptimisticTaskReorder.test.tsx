@@ -10,6 +10,7 @@ import type { PaginatedTasksResponse, Task, TasksByStatusMap } from './useTasks'
 
 const PAGE_SIZE = 50;
 const BOARD_ID = 'board-1';
+const API_BASE = 'http://localhost/api/v1';
 
 const makeInfiniteData = (tasks: Task[]): InfiniteData<PaginatedTasksResponse> => ({
   pages: [
@@ -26,15 +27,20 @@ const makeInfiniteData = (tasks: Task[]): InfiniteData<PaginatedTasksResponse> =
 describe('useOptimisticTaskReorder', () => {
   it('rolls back optimistic cache updates when reorder request fails', async () => {
     server.use(
-      http.put('http://localhost/tasks/board/:boardId/reorder', async () => {
+      // PUT reorder → 500
+      http.put(`${API_BASE}/tasks/board/:boardId/reorder`, async () => {
         await new Promise((resolve) => setTimeout(resolve, 20));
         return HttpResponse.json({ message: 'failed' }, { status: 500 });
+      }),
+      // GET tasks by status — needed because onSettled invalidateQueries triggers refetches
+      http.get(`${API_BASE}/tasks/board/:boardId`, () => {
+        return HttpResponse.json({ tasks: [], nextCursor: null, hasMore: false, message: 'ok' });
       })
     );
 
     const queryClient = new QueryClient({
       defaultOptions: {
-        queries: { retry: false },
+        queries: { retry: false, staleTime: Infinity },
         mutations: { retry: false },
       },
     });
@@ -77,7 +83,10 @@ describe('useOptimisticTaskReorder', () => {
     };
 
     queryClient.setQueryData(tasksQueryKeyByStatus.todo, makeInfiniteData([todoTaskA, todoTaskB]));
-    queryClient.setQueryData(tasksQueryKeyByStatus['in-progress'], makeInfiniteData([inProgressTask]));
+    queryClient.setQueryData(
+      tasksQueryKeyByStatus['in-progress'],
+      makeInfiniteData([inProgressTask])
+    );
     queryClient.setQueryData(tasksQueryKeyByStatus.review, makeInfiniteData([]));
     queryClient.setQueryData(tasksQueryKeyByStatus.done, makeInfiniteData([]));
 
@@ -109,25 +118,28 @@ describe('useOptimisticTaskReorder', () => {
       { wrapper }
     );
 
+    // Use await act to flush onMutate's async work (cancelQueries + setQueryData) before asserting
     let mutationPromise: Promise<unknown>;
-    act(() => {
+    await act(async () => {
       mutationPromise = result.current.mutateAsync({
         source,
         destination,
         nextTasksByStatus: tasksByStatus,
         tasksToUpdateItems,
       });
+      // Small tick to let onMutate run through its async cancelQueries
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    await waitFor(() => {
-      const optimisticTodoData = queryClient.getQueryData<InfiniteData<PaginatedTasksResponse>>(
-        tasksQueryKeyByStatus.todo
-      );
-      expect(optimisticTodoData?.pages[0]?.tasks.map((task) => task._id)).toEqual(['t2']);
-    });
+    // onMutate has now completed — check optimistic cache
+    const optimisticTodoData = queryClient.getQueryData<InfiniteData<PaginatedTasksResponse>>(
+      tasksQueryKeyByStatus.todo
+    );
+    expect(optimisticTodoData?.pages[0]?.tasks.map((task) => task._id)).toEqual(['t2']);
 
     await expect(mutationPromise!).rejects.toBeTruthy();
 
+    // After the request fails (onError), the cache should be restored to the original data
     await waitFor(() => {
       const rolledBackTodoData = queryClient.getQueryData(tasksQueryKeyByStatus.todo);
       expect(rolledBackTodoData).toEqual(initialTodoData);

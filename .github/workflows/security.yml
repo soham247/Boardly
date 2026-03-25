@@ -22,15 +22,53 @@ jobs:
           node-version: '20.x'
           cache: 'npm'
       
-      - name: Install dependencies
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install client dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Install server dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Run npm audit (root)
+        run: npm audit --json > audit-root.json || true
+
+      - name: Run npm audit (client)
+        working-directory: client
+        run: npm audit --json > ../audit-client.json || true
+
+      - name: Run npm audit (server)
+        working-directory: server
+        run: npm audit --json > ../audit-server.json || true
+
+      - name: Upload audit results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: npm-audit-results
+          path: |
+            audit-root.json
+            audit-client.json
+            audit-server.json
+
+      - name: Fail on high/critical vulnerabilities
         run: |
-          npm ci
-          cd client && npm ci
-          cd ../server && npm ci
-      
-      - name: Run npm audit
-        run: |
-          npm audit --audit-level=moderate
-          cd client && npm audit --audit-level=moderate
-          cd ../server && npm audit --audit-level=moderate
-        continue-on-error: true
+          fail=0
+          for f in audit-root.json audit-client.json audit-server.json; do
+            if [ -f "$f" ]; then
+              high=$(node -e "
+                const d=require('./$f');
+                const meta=d.metadata||{};
+                const v=meta.vulnerabilities||{};
+                console.log((v.high||0)+(v.critical||0));
+              " 2>/dev/null || echo 0)
+              if [ "$high" -gt "0" ]; then
+                echo "::error::$f contains $high high/critical vulnerabilities"
+                fail=1
+              fi
+            fi
+          done
+          exit $fail

@@ -68,7 +68,8 @@ export const buildReorderResult = (
 export const patchTasksByStatusCache = (
   queryClient: QueryClient,
   queryKey: readonly unknown[],
-  nextColumnTasks: Task[]
+  nextColumnTasks: Task[],
+  touchedTaskIds: Set<string>
 ): void => {
   const nextTasksMap = new Map(nextColumnTasks.map((task) => [task._id, task]));
 
@@ -78,13 +79,19 @@ export const patchTasksByStatusCache = (
     const placedIds = new Set<string>();
 
     const pages = previousData.pages.map((page) => {
-      const tasks = page.tasks
-        .filter((task) => nextTasksMap.has(task._id))
-        .map((task) => {
-          const updatedTask = nextTasksMap.get(task._id)!;
+      const tasks = page.tasks.flatMap((task) => {
+        if (nextTasksMap.has(task._id)) {
+          // Task still belongs here — use updated version
           placedIds.add(task._id);
-          return updatedTask;
-        });
+          return [nextTasksMap.get(task._id)!];
+        }
+        if (touchedTaskIds.has(task._id)) {
+          // Task was part of the drag but moved to another column — drop it
+          return [];
+        }
+        // Task was not involved in the drag — preserve it
+        return [task];
+      });
 
       return { ...page, tasks };
     });

@@ -38,7 +38,7 @@
   },
   "homepage": "https://github.com/soham247/Boardly#readme",
   "devDependencies": {
-    "concurrently": "^9.2.2",
+    "concurrently": "^9.2.1",
     "eslint": "^10.0.2",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",

@@ -1,11 +1,11 @@
-/**
- * Example test for health controller
- * Replace with actual test implementation as needed
- */
+import request from 'supertest';
+import { app } from '../app.js';
 
 describe('Health Check', () => {
-  test('should return a simple test case', () => {
-    expect(true).toBe(true);
+  test('GET /api/v1/health returns 200 with status OK', async () => {
+    const res = await request(app).get('/api/v1/health');
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ status: 'OK', message: 'Health check passed' });
   });
 
   test('basic arithmetic', () => {

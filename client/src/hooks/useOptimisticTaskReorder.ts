@@ -8,6 +8,7 @@ import {
   type ColumnStatus,
   type TaskUpdateItem,
 } from '../lib/taskReorder';
+import { getErrorMessage } from '../lib/errorUtils';
 
 export interface ReorderMutationVariables {
   source: DraggableLocation;
@@ -28,14 +29,6 @@ interface ReorderMutationContext {
   previousDestinationData: unknown;
 }
 
-const getErrorMessage = (error: unknown, fallback: string): string => {
-  if (typeof error === 'object' && error !== null) {
-    const maybeError = error as { response?: { data?: { message?: string } }; message?: string };
-    return maybeError.response?.data?.message ?? maybeError.message ?? fallback;
-  }
-  return fallback;
-};
-
 export const useOptimisticTaskReorder = ({
   boardId,
   tasksQueryKeyByStatus,
@@ -44,10 +37,13 @@ export const useOptimisticTaskReorder = ({
 
   return useMutation<unknown, unknown, ReorderMutationVariables, ReorderMutationContext>({
     mutationFn: async ({ tasksToUpdateItems }) => {
+      if (!boardId) {
+        throw new Error('Missing boardId in useOptimisticTaskReorder mutation');
+      }
       const res = await api.put(`/tasks/board/${boardId}/reorder`, { tasks: tasksToUpdateItems });
       return res.data;
     },
-    onMutate: async ({ source, destination, nextTasksByStatus }) => {
+    onMutate: async ({ source, destination, nextTasksByStatus, tasksToUpdateItems }) => {
       const sourceStatus = source.droppableId as ColumnStatus;
       const destinationStatus = destination.droppableId as ColumnStatus;
       const sourceKey = tasksQueryKeyByStatus[sourceStatus];
@@ -64,9 +60,21 @@ export const useOptimisticTaskReorder = ({
           ? previousSourceData
           : queryClient.getQueryData(destinationKey);
 
-      patchTasksByStatusCache(queryClient, sourceKey, nextTasksByStatus[sourceStatus] ?? []);
+      const touchedTaskIds = new Set<string>(tasksToUpdateItems.map((t) => t._id));
+
+      patchTasksByStatusCache(
+        queryClient,
+        sourceKey,
+        nextTasksByStatus[sourceStatus] ?? [],
+        touchedTaskIds
+      );
       if (sourceStatus !== destinationStatus) {
-        patchTasksByStatusCache(queryClient, destinationKey, nextTasksByStatus[destinationStatus] ?? []);
+        patchTasksByStatusCache(
+          queryClient,
+          destinationKey,
+          nextTasksByStatus[destinationStatus] ?? [],
+          touchedTaskIds
+        );
       }
 
       return {
@@ -79,7 +87,10 @@ export const useOptimisticTaskReorder = ({
     onError: (error, _variables, context) => {
       if (!context) return;
 
-      queryClient.setQueryData(tasksQueryKeyByStatus[context.sourceStatus], context.previousSourceData);
+      queryClient.setQueryData(
+        tasksQueryKeyByStatus[context.sourceStatus],
+        context.previousSourceData
+      );
       if (context.sourceStatus !== context.destinationStatus) {
         queryClient.setQueryData(
           tasksQueryKeyByStatus[context.destinationStatus],
@@ -89,14 +100,7 @@ export const useOptimisticTaskReorder = ({
 
       toast.error(getErrorMessage(error, 'Failed to reorder tasks. Changes were rolled back.'));
     },
-    onSettled: (_data, _error, variables) => {
-      const sourceStatus = variables.source.droppableId as ColumnStatus;
-      const destinationStatus = variables.destination.droppableId as ColumnStatus;
-
-      queryClient.invalidateQueries({ queryKey: tasksQueryKeyByStatus[sourceStatus] });
-      if (sourceStatus !== destinationStatus) {
-        queryClient.invalidateQueries({ queryKey: tasksQueryKeyByStatus[destinationStatus] });
-      }
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', boardId] });
     },
   });
