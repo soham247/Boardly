@@ -1,5 +1,4 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { toast } from 'sonner';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -20,7 +19,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     console.error('Unhandled render error', error, errorInfo);
-    toast.error('Something unexpected happened. Please refresh the page.');
   }
 
   public render() {
