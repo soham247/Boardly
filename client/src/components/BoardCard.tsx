@@ -114,6 +114,7 @@ export function BoardCard({ board, index, viewMode = 'grid', onDelete }: BoardCa
           onDelete(board._id);
           return 'Board deleted successfully';
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: (error: any) =>
           error?.response?.data?.message || 'Failed to delete board. Only creator can delete it.',
       });

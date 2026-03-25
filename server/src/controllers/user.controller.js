@@ -254,11 +254,10 @@ const updateProfile = asyncHandler(async (req, res) => {
     throw new AppError(400, 'No data provided to update');
   }
 
-  const updatedUser = await User.findByIdAndUpdate(
-    req.user._id,
-    updateData,
-    { new: true, runValidators: true }
-  ).select('-password -refreshToken');
+  const updatedUser = await User.findByIdAndUpdate(req.user._id, updateData, {
+    new: true,
+    runValidators: true,
+  }).select('-password -refreshToken');
 
   if (!updatedUser) {
     throw new AppError(404, 'User not found');
@@ -269,7 +268,6 @@ const updateProfile = asyncHandler(async (req, res) => {
     message: 'Profile updated successfully',
   });
 });
-
 
 const getCurrentUser = asyncHandler(async (req, res) => {
   return res.status(200).json({
@@ -383,7 +381,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
       text: `Your OTP for password reset is ${otp}. It is valid for 10 minutes.`,
       html: emailHtml,
     });
-  } catch (error) {
+  } catch (_e) {
     user.forgotPasswordOTP = null;
     user.forgotPasswordOTPExpiry = null;
     await user.save({ validateBeforeSave: false });

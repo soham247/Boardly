@@ -20,15 +20,15 @@ type BoardFormValues = z.infer<typeof boardSchema>;
 interface EditBoardModalProps {
   isOpen: boolean;
   onClose: () => void;
-  board: any;
+  board: Record<string, any>;
 }
 
 export function EditBoardModal({ isOpen, onClose, board }: EditBoardModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<Record<string, any>[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<Record<string, any>[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
 
   const { user: currentUser } = useAuthStore();
@@ -56,7 +56,7 @@ export function EditBoardModal({ isOpen, onClose, board }: EditBoardModalProps) 
 
       if (board.members && Array.isArray(board.members)) {
         // Map the nested userId object back down to a flat user object
-        const flatMembers = board.members.map((m: any) => {
+        const flatMembers = board.members.map((m: Record<string, any>) => {
           const mappedUser = m.userId ? { ...m.userId } : { _id: m._id };
           return { ...mappedUser, role: m.role || 'read' };
         });
@@ -93,7 +93,7 @@ export function EditBoardModal({ isOpen, onClose, board }: EditBoardModalProps) 
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const handleAddUser = (user: any) => {
+  const handleAddUser = (user: Record<string, any>) => {
     if (!selectedUsers.find((u) => u._id === user._id)) {
       setSelectedUsers([...selectedUsers, { ...user, role: 'read' }]);
     }

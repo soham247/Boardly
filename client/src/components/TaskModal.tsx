@@ -114,9 +114,9 @@ export function TaskModal({
         status: task.status,
         priority: task.priority,
         assignedTo: Array.isArray(task.assignedTo)
-          ? task.assignedTo.map((u: any) => u._id)
+          ? task.assignedTo.map((u: Record<string, any>) => u._id)
           : task.assignedTo
-            ? [(task.assignedTo as any)._id]
+            ? [(task.assignedTo as Record<string, any>)._id]
             : [],
         dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
         tags: task.tags?.map((t) => t._id) || [],

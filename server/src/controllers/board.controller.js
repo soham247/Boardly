@@ -37,7 +37,7 @@ const createBoard = async (req, res) => {
     }
 
     // Process incoming members
-    let boardMembers = [];
+    const boardMembers = [];
     let isWorkspaceUpdated = false;
 
     if (members && Array.isArray(members)) {
@@ -269,7 +269,7 @@ const updateBoard = async (req, res) => {
     if (members && Array.isArray(members)) {
       const workspace = await Workspace.findById(board.workspaceId);
       let isWorkspaceUpdated = false;
-      let boardMembers = [];
+      const boardMembers = [];
 
       if (!isOwner) {
         // Non-owners can edit anyone EXCEPT themselves and the owner.

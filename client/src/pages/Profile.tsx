@@ -55,11 +55,7 @@ export default function Profile() {
       if (selectedFile) formData.append('avatar', selectedFile);
 
       // Only make request if there are changes
-      let changed = false;
-      for (const _ of formData.entries()) {
-        changed = true; // iterator isn't empty
-        break;
-      }
+      const changed = [...formData.entries()].length > 0;
 
       if (changed) {
         await updateProfile(formData);

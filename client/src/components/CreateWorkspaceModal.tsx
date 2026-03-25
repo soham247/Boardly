@@ -33,6 +33,7 @@ export const CreateWorkspaceModal: React.FC<CreateWorkspaceModalProps> = ({
         onSuccess();
         return 'Workspace created successfully!';
       },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: (err: any) => {
         return err.response?.data?.message || 'Failed to create workspace';
       },

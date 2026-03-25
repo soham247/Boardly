@@ -49,7 +49,7 @@ interface AuthState {
     profession: string;
   }) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
-  resetPassword: (data: any) => Promise<void>;
+  resetPassword: (data: Record<string, unknown>) => Promise<void>;
   updateProfile: (data: FormData) => Promise<void>;
 }
 
@@ -130,7 +130,7 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
             isLoading: false,
           });
-        } catch (error) {
+        } catch (_error) {
           set({
             user: null,
             isAuthenticated: false,

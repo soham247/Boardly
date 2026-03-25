@@ -44,7 +44,7 @@ export function initializeSocket(httpServer) {
 
       socket.user = user;
       next();
-    } catch (err) {
+    } catch (_err) {
       next(new Error('Authentication error'));
     }
   });

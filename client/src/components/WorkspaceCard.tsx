@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/alert-dialog';
 
 type Props = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   workspace: Record<string, any>;
 };
 

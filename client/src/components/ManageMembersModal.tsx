@@ -49,7 +49,7 @@ export function ManageMembersModal({
   } = useWorkspaceMembers(workspaceId, isOpen);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<Record<string, any>[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -79,7 +79,9 @@ export function ManageMembersModal({
             .filter((m) => m.role === 'owner' || m.role === 'admin')
             .map((m) => m.user._id);
           setSearchResults(
-            (res.data.users || []).filter((u: any) => !nonPromotableIds.includes(u._id))
+            (res.data.users || []).filter(
+              (u: Record<string, any>) => !nonPromotableIds.includes(u._id)
+            )
           );
         } catch (error) {
           console.error('Failed to search users', error);
@@ -94,7 +96,7 @@ export function ManageMembersModal({
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const handleAddMember = async (user: any) => {
+  const handleAddMember = async (user: Record<string, any>) => {
     try {
       setActionLoading(user._id);
       // Check if they're already a shared member — they'll be promoted
@@ -107,8 +109,8 @@ export function ManageMembersModal({
       );
       setSearchQuery('');
       setSearchResults([]);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to add member');
+    } catch (error: unknown) {
+      toast.error((error as Record<string, any>).response?.data?.message || 'Failed to add member');
     } finally {
       setActionLoading(null);
     }
@@ -119,8 +121,10 @@ export function ManageMembersModal({
       setActionLoading(member.user._id);
       await removeMember(member.user._id);
       toast.success(`${member.user.fullName || member.user.username} removed`);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to remove member');
+    } catch (error: unknown) {
+      toast.error(
+        (error as Record<string, any>).response?.data?.message || 'Failed to remove member'
+      );
     } finally {
       setActionLoading(null);
     }
@@ -131,8 +135,10 @@ export function ManageMembersModal({
       setActionLoading(member.user._id);
       await updateRole({ memberId: member.user._id, role: newRole });
       toast.success(`Role updated to ${newRole}`);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to update role');
+    } catch (error: unknown) {
+      toast.error(
+        (error as Record<string, any>).response?.data?.message || 'Failed to update role'
+      );
     } finally {
       setActionLoading(null);
     }

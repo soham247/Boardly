@@ -38,11 +38,12 @@ export default function WorkspaceView() {
     if (queryBoards && (!boards || boards.length !== queryBoards.length)) {
       setBoards(queryBoards as unknown as BoardProps[]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryBoards, boards.length]);
 
   useEffect(() => {
     if (workspaces && workspaceId) {
-      const currentWs = workspaces.find((w: any) => w._id === workspaceId);
+      const currentWs = workspaces.find((w: { _id: string }) => w._id === workspaceId);
       if (currentWs) {
         setWorkspace(currentWs as Workspace);
       }

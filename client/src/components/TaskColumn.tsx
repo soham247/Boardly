@@ -43,7 +43,7 @@ export function TaskColumn({
             }`}
           >
             {tasks
-              .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+              .sort((a: TaskProps, b: TaskProps) => (a.order || 0) - (b.order || 0))
               .map((task, index) => (
                 <TaskCard
                   key={task._id}

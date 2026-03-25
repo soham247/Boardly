@@ -7,7 +7,7 @@ class AppError extends Error {
   }
 }
 
-const errorMiddleware = (err, req, res, next) => {
+const errorMiddleware = (err, req, res, _next) => {
   err.statusCode = err.statusCode || 500;
   err.message = err.message || 'Internal Server Error';
 

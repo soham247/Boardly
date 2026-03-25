@@ -25,9 +25,9 @@ interface CreateBoardModalProps {
 export function CreateBoardModal({ isOpen, onClose, workspaceId }: CreateBoardModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<Record<string, any>[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<Record<string, any>[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
 
   const { createBoard } = useBoards(workspaceId);
@@ -70,7 +70,7 @@ export function CreateBoardModal({ isOpen, onClose, workspaceId }: CreateBoardMo
     }
   }, [isOpen, reset]);
 
-  const handleAddUser = (user: any) => {
+  const handleAddUser = (user: Record<string, any>) => {
     if (!selectedUsers.find((u) => u._id === user._id)) {
       setSelectedUsers([...selectedUsers, { ...user, role: 'read' }]);
     }

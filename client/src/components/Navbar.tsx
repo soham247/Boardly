@@ -78,8 +78,11 @@ export function Navbar() {
   useEffect(() => {
     if (isAuthenticated && isWorkspacesRoute) {
       if (workspaceId) {
-        const current = workspaces.find((w: any) => w._id === workspaceId);
+        const current = workspaces.find(
+          (w: { _id: string; name: string }) => w._id === workspaceId
+        );
         if (current) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setWorkspaceName(current.name);
           setWorkspaceInitial(current.name.charAt(0).toUpperCase());
         }
@@ -134,7 +137,7 @@ export function Navbar() {
                 Switch Workspace
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-border" />
-              {workspaces.map((ws: any) => (
+              {workspaces.map((ws: { _id: string; name: string }) => (
                 <DropdownMenuItem
                   key={ws._id}
                   onClick={() => navigate(`/workspaces/${ws._id}`)}
